@@ -5,6 +5,11 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/skillcart-auth-service/pom.xml" />
+        <option value="$PROJECT_DIR$/skillcart-auth/pom.xml" />
+        <option value="$PROJECT_DIR$/Gateway/pom.xml" />
+        <option value="$PROJECT_DIR$/Eureka/pom.xml" />
+        <option value="$PROJECT_DIR$/Config_Server/pom.xml" />
+        <option value="$PROJECT_DIR$/Resume_service/pom.xml" />
       </list>
     </option>
   </component>

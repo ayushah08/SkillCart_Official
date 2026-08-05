@@ -1,6 +1,7 @@
 package com.skillcart.skillcart_auth_service.controller;
 
 import com.skillcart.skillcart_auth_service.dto.AuthResponse;
+import com.skillcart.skillcart_auth_service.dto.LoginRequest;
 import com.skillcart.skillcart_auth_service.dto.RegisterRequest;
 import com.skillcart.skillcart_auth_service.service.AuthService;
 import jakarta.validation.Valid;
@@ -18,7 +19,7 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/register")
-    private AuthResponse register(@Valid @RequestBody RegisterRequest registerRequest) {
+    public AuthResponse register(@Valid @RequestBody RegisterRequest registerRequest) {
 
         //   {
 //    "username":"ayush",
@@ -27,6 +28,11 @@ public class AuthController {
 //}
 
         return authService.register(registerRequest);
+    }
+
+    @PostMapping("/login")
+    public AuthResponse login(@Valid @RequestBody LoginRequest loginRequest) {
+        return authService.login(loginRequest);
     }
 
 

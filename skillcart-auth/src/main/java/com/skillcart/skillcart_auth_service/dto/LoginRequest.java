@@ -7,16 +7,12 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class RegisterRequest {
+public class LoginRequest {
 
-    @NotBlank(message = "Password is required")
-    private String username;
-
-    @Email(message = "Invalid email")
+    @Email(message = "Enter a Valid Email")
+    @NotBlank(message = "Email cannot be blank")
     private String email;
 
-    @NotBlank(message = "Password is required")
+    @NotBlank(message = "Please enter a password")
     private String password;
-
-
 }
