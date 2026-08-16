@@ -1,0 +1,100 @@
+package com.skillcart_resumeservice.resumeservice.service;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.skillcart_resumeservice.resumeservice.entity.ResumeEntity;
+import com.skillcart_resumeservice.resumeservice.repository.ResumeRepository;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.Optional;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+public class ResumeService {
+
+    private final RestClient restClient;
+    private final ResumeRepository resumeRepository;
+    private final ObjectMapper objectMapper;
+
+    Logger logger = LoggerFactory.getLogger(ResumeService.class);
+
+    @Value("${service.download-base-url:http://localhost:8082}")
+    private String downloadBaseUrl;
+
+    @Transactional
+    public ResumeEntity storeResume(MultipartFile file) throws IOException, InterruptedException {
+        String fileName = file.getOriginalFilename();
+        String fileType = (fileName != null && fileName.contains("."))
+                ? fileName.substring(fileName.lastIndexOf("."))
+                : "";
+
+        ResumeEntity resumeEntity = new ResumeEntity();
+        resumeEntity.setFileName(fileName);
+        resumeEntity.setFileType(fileType);
+        resumeEntity.setFileData(file.getBytes());
+        resumeEntity.setParsedJson(null);
+
+        // 1. Save FIRST to generate the primary key ID
+        resumeEntity = resumeRepository.save(resumeEntity);
+
+        // 2. Call AI service with valid ID
+        String aiParsedData = aiResponse(resumeEntity);
+
+        // 3. Update parsed JSON
+        resumeEntity.setParsedJson(aiParsedData);
+        return resumeEntity;
+    }
+
+  
+    public String aiResponse(ResumeEntity resumeEntity) {
+
+        //using this for sending the url to Ai service
+//        String downloadUrl = String.format("%s/api/v1/resume/download/%d", downloadBaseUrl, resumeEntity.getId());
+
+//        String jsonPayload = """
+//          {
+//            "url" : "%s"
+//          }""".formatted(downloadUrl);
+
+
+//        logger.error("An error occured in Ai Side");
+        //Directly sending the main file data in bytes
+        return restClient.post()
+                .uri("https://skillcart-ai.onrender.com/api/v1/resume/parse") // <--- Absolute URI
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(resumeEntity.getFileData())
+                .retrieve()
+                .body(String.class);
+    }
+
+    public void setUserId(UUID userId) {
+
+        //TODO Get UUID from uS and set it in the RUID
+
+        if (!resumeRepository.findByUserId(userId).isEmpty()){
+
+            logger.error("user Id already exists");
+        }
+        else {
+            ResumeEntity resumeEntity = new ResumeEntity();
+            resumeEntity.setUserId(userId);
+            logger.atInfo().log("user Id is set");
+            resumeRepository.save(resumeEntity);
+        }
+
+
+
+    }
+
+
+
+}
