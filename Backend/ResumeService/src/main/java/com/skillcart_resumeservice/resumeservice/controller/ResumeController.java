@@ -26,8 +26,8 @@ public class ResumeController {
     @PostMapping(value = "/upload" , consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public String uploadResume(@RequestParam("file") MultipartFile file) {
         try {
-            resumeService.storeResume(file);
-            return "File Uploaded Succesfully";
+            Long id = resumeService.storeResume(file);
+            return "File Uploaded Succesfully for Rid" + id;
 
         } catch (IOException | InterruptedException e) {
             return "File Upload Failed";

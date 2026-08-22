@@ -14,7 +14,6 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -31,7 +30,7 @@ public class ResumeService {
     private String downloadBaseUrl;
 
     @Transactional
-    public ResumeEntity storeResume(MultipartFile file) throws IOException, InterruptedException {
+    public Long storeResume(MultipartFile file) throws IOException, InterruptedException {
         String fileName = file.getOriginalFilename();
         String fileType = (fileName != null && fileName.contains("."))
                 ? fileName.substring(fileName.lastIndexOf("."))
@@ -51,7 +50,7 @@ public class ResumeService {
 
         // 3. Update parsed JSON
         resumeEntity.setParsedJson(aiParsedData);
-        return resumeEntity;
+        return resumeEntity.getId();
     }
 
   
@@ -82,7 +81,7 @@ public class ResumeService {
 
         if (!resumeRepository.findByUserId(userId).isEmpty()){
 
-            logger.error("user Id already exists");
+
         }
         else {
             ResumeEntity resumeEntity = new ResumeEntity();

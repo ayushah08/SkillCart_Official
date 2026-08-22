@@ -58,6 +58,10 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+    public UUID getUserId() {
+        return id;
+    }
+
     @Enumerated(EnumType.STRING)
     private Role role;
 

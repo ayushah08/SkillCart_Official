@@ -44,6 +44,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 4. Extract Username
         String username = jwtService.extractUsername(jwt);
+        String role =
+                jwtService.extractRole(jwt);
 
         // 5. Continue only if user is not already authenticated
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {

@@ -1,5 +1,6 @@
 package com.skillcart.skillcart_auth_service.security;
 
+import com.skillcart.skillcart_auth_service.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -26,92 +27,213 @@ public class JwtService {
     @Value("${jwt.expiration}")
     private long jwtExpiration;
 
+
+    // ==========================
+    // Signing Key
+    // ==========================
+
     private Key getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secret);
+
+        byte[] keyBytes =
+                Decoders.BASE64.decode(secret);
+
         return Keys.hmacShaKeyFor(keyBytes);
     }
+
 
     // ==========================
     // Generate Token
     // ==========================
 
-    public String generateJwtToken(UserDetails userDetails) {
+    public String generateJwtToken(
+            UserDetails userDetails
+    ) {
+
+        User user =
+                (User) userDetails;
 
         return Jwts.builder()
-                .subject(userDetails.getUsername())
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
-                .signWith(getSignInKey())
+
+                .subject(
+                        user.getUsername()
+                )
+
+                .claim(
+                        "userId",
+                        user.getUserId().toString()
+                )
+
+                .claim(
+                        "role",
+                        user.getRole().name()
+                )
+
+                .issuedAt(
+                        new Date()
+                )
+
+                .expiration(
+                        new Date(
+                                System.currentTimeMillis()
+                                        + jwtExpiration
+                        )
+                )
+
+                .signWith(
+                        getSignInKey()
+                )
+
                 .compact();
     }
+
 
     // ==========================
     // Extract Username
     // ==========================
 
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+    public String extractUsername(
+            String token
+    ) {
+
+        return extractClaim(
+                token,
+                Claims::getSubject
+        );
     }
+
+
+    // ==========================
+    // Extract User ID
+    // ==========================
+
+    public String extractUserId(
+            String token
+    ) {
+
+        return extractClaim(
+                token,
+                claims ->
+                        claims.get(
+                                "userId",
+                                String.class
+                        )
+        );
+    }
+
+
+    // ==========================
+    // Extract Role
+    // ==========================
+
+    public String extractRole(
+            String token
+    ) {
+
+        return extractClaim(
+                token,
+                claims ->
+                        claims.get(
+                                "role",
+                                String.class
+                        )
+        );
+    }
+
 
     // ==========================
     // Extract Expiration
     // ==========================
 
-    public Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
+    public Date extractExpiration(
+            String token
+    ) {
+
+        return extractClaim(
+                token,
+                Claims::getExpiration
+        );
     }
+
 
     // ==========================
     // Generic Claim Extractor
     // ==========================
 
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+    public <T> T extractClaim(
+            String token,
+            Function<Claims, T> claimsResolver
+    ) {
 
-        Claims claims = extractAllClaims(token);
+        Claims claims =
+                extractAllClaims(token);
 
-        return claimsResolver.apply(claims);
+        return claimsResolver.apply(
+                claims
+        );
     }
+
 
     // ==========================
     // Extract All Claims
     // ==========================
 
-    private Claims extractAllClaims(String token) {
+    private Claims extractAllClaims(
+            String token
+    ) {
 
         return Jwts.parser()
-                .verifyWith((SecretKey) getSignInKey())
+
+                .verifyWith(
+                        (SecretKey) getSignInKey()
+                )
+
                 .build()
+
                 .parseSignedClaims(token)
+
                 .getPayload();
     }
+
 
     // ==========================
     // Expiration Check
     // ==========================
 
-    private boolean isTokenExpired(String token) {
+    private boolean isTokenExpired(
+            String token
+    ) {
 
-        return extractExpiration(token).before(new Date());
+        return extractExpiration(token)
+                .before(new Date());
     }
+
 
     // ==========================
     // Validate Token
     // ==========================
 
-    public boolean validateJwtToken(String token, UserDetails userDetails) {
+    public boolean validateJwtToken(
+            String token,
+            UserDetails userDetails
+    ) {
 
         try {
 
-            String username = extractUsername(token);
+            String username =
+                    extractUsername(token);
 
-            return username.equals(userDetails.getUsername())
+            return username.equals(
+                    userDetails.getUsername()
+            )
                     && !isTokenExpired(token);
 
-        } catch (ExpiredJwtException |
-                 MalformedJwtException |
-                 UnsupportedJwtException |
-                 SignatureException |
-                 IllegalArgumentException e) {
+        } catch (
+                ExpiredJwtException |
+                MalformedJwtException |
+                UnsupportedJwtException |
+                SignatureException |
+                IllegalArgumentException e
+        ) {
 
             return false;
         }
