@@ -75,20 +75,18 @@ public class ResumeService {
                 .body(String.class);
     }
 
-    public void setUserId(UUID userId) {
 
-        //TODO Get UUID from uS and set it in the RUID
+    public String UIDSetter(UUID id) {
 
-        if (!resumeRepository.findByUserId(userId).isEmpty()){
+       ResumeEntity resumeEntity =resumeRepository.findByUserId(id);
 
-
-        }
-        else {
-            ResumeEntity resumeEntity = new ResumeEntity();
-            resumeEntity.setUserId(userId);
-            logger.atInfo().log("user Id is set");
-            resumeRepository.save(resumeEntity);
-        }
+       if(resumeEntity == null){
+           resumeEntity = new ResumeEntity();
+           resumeEntity.setUserId(id);
+           return "User Id Set For Resume ";
+       }else {
+           return "User Id Already Exists for this  User in RID ";
+       }
 
 
 

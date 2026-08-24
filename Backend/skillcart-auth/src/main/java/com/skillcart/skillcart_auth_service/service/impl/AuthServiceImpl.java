@@ -90,13 +90,22 @@ public class AuthServiceImpl implements AuthService {
         return new AuthResponse(token, "Welcome Back :" + user1.getUsername() + "Login Succesful");
     }
 
-    public UUID sendUID(User user) {
+
+
+    public String sendUID(User user) {
         UUID id = user.getId();
 
 
-       return restClient.post()
+        restClient.post()
                .uri("http://localhost:8082/api/v1/resume//get/"+id)
-               .retrieve()
-               .body(UUID.class);
+                .body(id)
+                .retrieve()
+                .body(UUID.class);
+
+        return "User Id Set For Resume ";
+
+
+
+
     }
 }

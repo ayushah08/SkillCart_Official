@@ -62,7 +62,7 @@ public class ResumeController {
     @PostMapping("/get/{$UserId}")
     public ResponseEntity<String> getUserId(@PathVariable("$UserId") UUID userId) {
 
-        resumeService.setUserId(userId);
+        resumeService.UIDSetter(userId);
         
         return ResponseEntity.ok().body("User Id: " + userId + "received");
 
