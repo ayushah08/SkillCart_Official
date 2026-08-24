@@ -23,6 +23,15 @@
         <module name="Gateway" />
         <module name="Config_Server" />
       </profile>
+      <profile name="Annotation profile for ResumeService" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
+        </processorPath>
+        <module name="ResumeService" />
+      </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="Resume_service" target="21" />
@@ -33,6 +42,7 @@
       <module name="Config_Server" options="-parameters" />
       <module name="Eureka" options="-parameters" />
       <module name="Gateway" options="-parameters" />
+      <module name="ResumeService" options="-parameters" />
       <module name="Resume_service" options="-parameters" />
       <module name="skillcart-auth" options="-parameters" />
     </option>
