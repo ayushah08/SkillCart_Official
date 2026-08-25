@@ -97,7 +97,7 @@ public class AuthServiceImpl implements AuthService {
 
 
         restClient.post()
-               .uri("https://skillcart-resume.onrender.com/api/v1/resume//get/"+id)
+               .uri("https://skillcart-resume.onrender.com/api/v1/resume/get/"+id)
                 .body(id)
                 .retrieve()
                 .body(UUID.class);
