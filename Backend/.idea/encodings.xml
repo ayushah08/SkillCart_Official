@@ -4,8 +4,10 @@
     <file url="file://$PROJECT_DIR$/Config_Server/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Eureka/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Gateway/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Job_Service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ResumeService/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Resume_service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/skillcart-auth/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/social-service/src/main/java" charset="UTF-8" />
   </component>
 </project>

@@ -21,8 +21,7 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping(
-            consumes = "multipart/form-data"
-    )
+            consumes = "multipart/form-data")
     public PostResponse createPost(
             Authentication authentication,
 
