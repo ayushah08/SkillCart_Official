@@ -75,6 +75,16 @@ public class ResumeService {
                 .body(String.class);
     }
 
+//
+//    public String UIDGetter() {
+//
+//        return restClient
+//                .get()
+//                .uri("h")
+//
+//
+//    }
+
 
     public String UIDSetter(UUID id) {
 
@@ -83,9 +93,9 @@ public class ResumeService {
        if(resumeEntity == null){
            resumeEntity = new ResumeEntity();
            resumeEntity.setUserId(id);
-           return "User Id Set For Resume ";
+           return "User Id Set For Resume id  " + resumeEntity.getId();
        }else {
-           return "User Id Already Exists for this  User in RID ";
+           return "User Id Already Exists for this  User with rid  " + resumeEntity.getId() ;
        }
 
 
