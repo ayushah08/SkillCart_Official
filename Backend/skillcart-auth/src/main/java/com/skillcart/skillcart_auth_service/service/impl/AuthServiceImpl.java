@@ -32,80 +32,157 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
     @Autowired
     private JwtService jwtService;
 
-    private final RestClient  restClient;
+    private final RestClient restClient;
 
+
+    // =========================================================
+    // REGISTER
+    // =========================================================
 
     @Override
     public AuthResponse register(RegisterRequest registerRequest) {
 
-        //emailValidation
+        // Check email
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
-            throw new EmailAlreadyExistsException("User with email already exists");
+            throw new EmailAlreadyExistsException(
+                    "User with email already exists"
+            );
         }
 
-        //UserNAme
+        // Check username
         if (userRepository.existsByUsername(registerRequest.getUsername())) {
-
-            throw new UsernameAlreadyExistsException("Username already exists");
+            throw new UsernameAlreadyExistsException(
+                    "Username already exists"
+            );
         }
 
-
-        //Mapping User from DTO toENTITY
-        User user = User.builder().
-                username(registerRequest.getUsername())
+        // Create User
+        User user = User.builder()
+                .username(registerRequest.getUsername())
                 .email(registerRequest.getEmail())
-                .password(passwordEncoder.encode(registerRequest.getPassword()))
-                .role(Role.USER).verified(false)
-                .createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
+                .password(
+                        passwordEncoder.encode(
+                                registerRequest.getPassword()
+                        )
+                )
+                .role(Role.USER)
+                .verified(false)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
 
+        // Save User
+        User savedUser = userRepository.save(user);
 
-       User savedUser =  userRepository.save(user);
-
+        // Generate JWT
         String token = jwtService.generateJwtToken(savedUser);
 
-        sendUID(user);
+        /*
+         * Resume is NOT created during registration.
+         *
+         * Therefore rid = null.
+         *
+         * Frontend can use this to open the resume upload page.
+         */
 
-        return new AuthResponse(token, "User Registered Successfully");
+        return new AuthResponse(
+                token,
+                "User Registered Successfully",
+                null
+        );
     }
+
+
+    // =========================================================
+    // LOGIN
+    // =========================================================
 
     @Override
     public AuthResponse login(LoginRequest loginRequest) {
 
-        Optional<User> user = userRepository.findByEmail(loginRequest.getEmail());
+        // Find user by email
+        Optional<User> user = userRepository.findByEmail(
+                loginRequest.getEmail()
+        );
 
+        // Email doesn't exist
         if (user.isEmpty()) {
-            throw new EmailNotFoundException(loginRequest.getEmail() + "Email Not found");
+            throw new EmailNotFoundException(
+                    loginRequest.getEmail() + " Email Not Found"
+            );
         }
+
         User user1 = user.get();
-        if (!passwordEncoder.matches(loginRequest.getPassword(), user1.getPassword())) {
-            throw new IncorrectPasswordException("Password is incorrect");
+
+        // Check password
+        if (!passwordEncoder.matches(
+                loginRequest.getPassword(),
+                user1.getPassword()
+        )) {
+            throw new IncorrectPasswordException(
+                    "Password is incorrect"
+            );
         }
 
-        String token = jwtService.generateJwtToken((UserDetails) user1);
+        // Generate JWT
+        String token = jwtService.generateJwtToken(
+                (UserDetails) user1
+        );
 
-        return new AuthResponse(token, "Welcome Back :" + user1.getUsername() + "Login Succesful");
+        /*
+         * Ask Resume Service whether this user
+         * already has a resume.
+         *
+         * If resume exists:
+         *      rid = resume UUID
+         *
+         * If resume doesn't exist:
+         *      rid = null
+         */
+
+        UUID rid = getResumeId(user1.getId());
+
+        return new AuthResponse(
+                token,
+                "Welcome Back: "
+                        + user1.getUsername()
+                        + " Login Successful",
+                rid
+        );
     }
 
 
+    // =========================================================
+    // GET RESUME ID FROM RESUME SERVICE
+    // =========================================================
 
-    public String sendUID(User user) {
-        UUID id = user.getId();
+    private UUID getResumeId(UUID userId) {
 
+        try {
 
-        restClient.post()
-               .uri("https://skillcart-resume.onrender.com/api/v1/resume/get/"+id)
-                .body(id)
-                .retrieve()
-                .body(UUID.class);
+            return restClient.get()
+                    .uri(
+                            "https://skillcart-resume.onrender.com/api/v1/resume/user/"
+                                    + userId
+                    )
+                    .retrieve()
+                    .body(UUID.class);
 
-        return "User Id Set For Resume ";
+        } catch (Exception e) {
 
+            /*
+             * If Resume Service says that the user
+             * doesn't have a resume, return null.
+             *
+             * Frontend will then redirect the user
+             * to resume upload.
+             */
 
-
-
+            return null;
+        }
     }
 }
