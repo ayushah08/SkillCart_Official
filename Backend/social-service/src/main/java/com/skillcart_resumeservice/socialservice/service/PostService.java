@@ -58,15 +58,15 @@ public class PostService {
         try {
 
             Map<?, ?> result =
-                    cloudinaryService.uploader().upload(
-                            file.getBytes(),
+                    cloudinaryService.uploadFile( file.getBytes(),
                             ObjectUtils.asMap(
                                     "folder",
                                     "skillcart/posts",
                                     "resource_type",
                                     "image"
-                            )
-                    );
+                            ));
+
+
 
             return result
                     .get("secure_url")
@@ -187,5 +187,46 @@ public class PostService {
                 )
 
                 .build();
+    }
+
+    public Post createPost(
+            UUID userId,
+            String content,
+            MultipartFile image
+    ) {
+
+        if (
+                (content == null || content.trim().isEmpty())
+                        && (image == null || image.isEmpty())
+        ) {
+
+            throw new IllegalArgumentException(
+                    "Post content or image is required"
+            );
+        }
+
+        String imageUrl = null;
+
+        if (
+                image != null &&
+                        !image.isEmpty()
+        ) {
+
+            imageUrl = uploadImage(image);
+        }
+
+        Post post = new Post();
+
+        post.setUserId(userId);
+
+        post.setContent(
+                content != null
+                        ? content.trim()
+                        : null
+        );
+
+        post.setImageUrl(imageUrl);
+
+        return postRepository.save(post);
     }
 }

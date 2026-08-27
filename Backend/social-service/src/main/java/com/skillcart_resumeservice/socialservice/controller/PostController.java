@@ -1,6 +1,7 @@
 package com.skillcart_resumeservice.socialservice.controller;
 
 import com.skillcart_resumeservice.socialservice.dto.PostResponse;
+import com.skillcart_resumeservice.socialservice.entity.Post;
 import com.skillcart_resumeservice.socialservice.service.PostService;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ public class PostController {
 
     @PostMapping(
             consumes = "multipart/form-data")
-    public PostResponse createPost(
+    public Post createPost(
             Authentication authentication,
 
             @RequestPart(
