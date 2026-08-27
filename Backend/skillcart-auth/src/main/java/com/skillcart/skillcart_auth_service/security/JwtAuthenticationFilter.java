@@ -27,52 +27,75 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain)
-            throws ServletException, IOException {
+            @NonNull FilterChain filterChain
+    ) throws ServletException, IOException {
 
-        // 1. Read Authorization Header
-        String authHeader = request.getHeader("Authorization");
+        String authHeader =
+                request.getHeader("Authorization");
 
-        // 2. Check if header is missing or doesn't start with "Bearer "
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        // No JWT
+        if (authHeader == null ||
+                !authHeader.startsWith("Bearer ")) {
+
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 3. Extract JWT Token
-        String jwt = authHeader.substring(7);
+        String jwt =
+                authHeader.substring(7);
 
-        // 4. Extract Username
-        String username = jwtService.extractUsername(jwt);
-        String role =
-                jwtService.extractRole(jwt);
+        try {
 
-        // 5. Continue only if user is not already authenticated
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            String username =
+                    jwtService.extractUsername(jwt);
 
-            // 6. Load UserDetails from Database
-            UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+            if (
+                    username != null &&
+                            SecurityContextHolder
+                                    .getContext()
+                                    .getAuthentication() == null
+            ) {
 
-            // 7. Validate JWT
-            if (jwtService.validateJwtToken(jwt, userDetails)) {
+                UserDetails userDetails =
+                        customUserDetailsService
+                                .loadUserByUsername(username);
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
+                boolean valid =
+                        jwtService.validateJwtToken(
+                                jwt,
+                                userDetails
                         );
 
-                authentication.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
+                if (valid) {
 
-                // 8. Store Authentication in SecurityContext
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
+
+                    authentication.setDetails(
+                            new WebAuthenticationDetailsSource()
+                                    .buildDetails(request)
+                    );
+
+                    SecurityContextHolder
+                            .getContext()
+                            .setAuthentication(authentication);
+                }
             }
+
+        } catch (Exception e) {
+
+            System.out.println(
+                    "JWT Authentication failed: "
+                            + e.getClass().getSimpleName()
+                            + " - "
+                            + e.getMessage()
+            );
         }
 
-        // 9. Continue Filter Chain
         filterChain.doFilter(request, response);
     }
 }

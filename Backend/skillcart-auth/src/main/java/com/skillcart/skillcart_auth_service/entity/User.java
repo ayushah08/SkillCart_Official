@@ -55,8 +55,11 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    private AuthProvider provider;
 
     public UUID getUserId() {
         return id;
@@ -70,4 +73,9 @@ public class User implements UserDetails {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    public String setName(String finalName) {
+
+        return username;
+    }
 }
