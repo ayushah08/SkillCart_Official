@@ -19,11 +19,19 @@ public interface FollowRepository
             UUID followingId
     );
 
-    List<Follow> findByFollowerId(UUID followerId);
+    List<Follow> findByFollowerId(
+            UUID followerId
+    );
 
-    List<Follow> findByFollowingId(UUID followingId);
+    List<Follow> findByFollowingId(
+            UUID followingId
+    );
 
-    long countByFollowerId(UUID userId);
+    long countByFollowerId(
+            UUID userId
+    );
 
-    long countByFollowingId(UUID userId);
+    long countByFollowingId(
+            UUID userId
+    );
 }

@@ -1,27 +1,95 @@
 package com.skillcart.controller;
 
-import com.skillcart.entity.service.SaveJobService;
+import com.skillcart.service.SaveJobService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/jobs")
+@RequiredArgsConstructor
 public class JobController {
 
-    private final SaveJobService  saveJobService;
+    private final SaveJobService saveJobService;
 
-    public JobController(SaveJobService saveJobService) {
-        this.saveJobService = saveJobService;
+
+    // ===============================
+    // SAVE JOB
+    // ===============================
+
+    @PostMapping("/save/{jobId}")
+    public String saveJob(
+            @PathVariable Long jobId,
+            Authentication authentication
+    ) {
+
+        UUID userId =
+                (UUID) authentication.getPrincipal();
+
+        return saveJobService.saveJob(
+                jobId,
+                userId
+        );
     }
 
-    @PostMapping("/save/job")
-    public String saveJob(Long jobId , Authentication authentication){
 
-        return saveJobService.saveJobs(jobId , (UUID) authentication.getPrincipal());
+    // ===============================
+    // UNSAVE JOB
+    // ===============================
 
+    @DeleteMapping("/save/{jobId}")
+    public String unsaveJob(
+            @PathVariable Long jobId,
+            Authentication authentication
+    ) {
+
+        UUID userId =
+                (UUID) authentication.getPrincipal();
+
+        return saveJobService.unsaveJob(
+                jobId,
+                userId
+        );
+    }
+
+
+    // ===============================
+    // GET SAVED JOB IDS
+    // ===============================
+
+    @GetMapping("/saved")
+    public List<Long> getSavedJobs(
+            Authentication authentication
+    ) {
+
+        UUID userId =
+                (UUID) authentication.getPrincipal();
+
+        return saveJobService.getSavedJobIds(
+                userId
+        );
+    }
+
+
+    // ===============================
+    // CHECK SAVED STATUS
+    // ===============================
+
+    @GetMapping("/saved/{jobId}")
+    public boolean isJobSaved(
+            @PathVariable Long jobId,
+            Authentication authentication
+    ) {
+
+        UUID userId =
+                (UUID) authentication.getPrincipal();
+
+        return saveJobService.isJobSaved(
+                jobId,
+                userId
+        );
     }
 }

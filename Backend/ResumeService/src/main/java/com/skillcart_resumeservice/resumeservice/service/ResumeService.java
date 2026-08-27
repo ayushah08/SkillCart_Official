@@ -30,7 +30,10 @@ public class ResumeService {
     private String downloadBaseUrl;
 
     @Transactional
-    public Long storeResume(MultipartFile file) throws IOException, InterruptedException {
+    public Long storeResume(
+            MultipartFile file,
+            UUID userId
+    )  throws IOException, InterruptedException {
         String fileName = file.getOriginalFilename();
         String fileType = (fileName != null && fileName.contains("."))
                 ? fileName.substring(fileName.lastIndexOf("."))
@@ -75,15 +78,6 @@ public class ResumeService {
                 .body(String.class);
     }
 
-//
-//    public String UIDGetter() {
-//
-//        return restClient
-//                .get()
-//                .uri("h")
-//
-//
-//    }
 
 
     public String UIDSetter(UUID id) {
@@ -103,5 +97,12 @@ public class ResumeService {
     }
 
 
+    public ResumeEntity getResumeByUserId(
+            UUID userId
+    ) {
 
+        return resumeRepository.findByUserId(
+                userId
+        );
+    }
 }

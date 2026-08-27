@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -13,6 +14,7 @@ import java.util.UUID;
 public class FollowController {
 
     private final FollowService followService;
+
 
     @PostMapping("/{userId}/follow")
     public void follow(
@@ -29,6 +31,7 @@ public class FollowController {
         );
     }
 
+
     @DeleteMapping("/{userId}/follow")
     public void unfollow(
             Authentication authentication,
@@ -44,6 +47,7 @@ public class FollowController {
         );
     }
 
+
     @GetMapping("/{userId}/followers/count")
     public long followersCount(
             @PathVariable UUID userId
@@ -54,12 +58,51 @@ public class FollowController {
         );
     }
 
+
     @GetMapping("/{userId}/following/count")
     public long followingCount(
             @PathVariable UUID userId
     ) {
 
         return followService.followingCount(
+                userId
+        );
+    }
+
+
+    @GetMapping("/{userId}/followers")
+    public List<UUID> getFollowers(
+            @PathVariable UUID userId
+    ) {
+
+        return followService.getFollowers(
+                userId
+        );
+    }
+
+
+    @GetMapping("/{userId}/following")
+    public List<UUID> getFollowing(
+            @PathVariable UUID userId
+    ) {
+
+        return followService.getFollowing(
+                userId
+        );
+    }
+
+
+    @GetMapping("/{userId}/following-status")
+    public boolean followingStatus(
+            Authentication authentication,
+            @PathVariable UUID userId
+    ) {
+
+        UUID currentUser =
+                (UUID) authentication.getPrincipal();
+
+        return followService.isFollowing(
+                currentUser,
                 userId
         );
     }

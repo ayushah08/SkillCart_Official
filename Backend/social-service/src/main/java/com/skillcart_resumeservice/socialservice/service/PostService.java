@@ -1,6 +1,7 @@
 package com.skillcart_resumeservice.socialservice.service;
 
 
+import com.cloudinary.utils.ObjectUtils;
 import com.skillcart_resumeservice.socialservice.dto.PostResponse;
 import com.skillcart_resumeservice.socialservice.entity.Post;
 import com.skillcart_resumeservice.socialservice.repository.CommentRepository;
@@ -13,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -24,35 +27,58 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final CloudinaryService cloudinaryService;
 
-    public PostResponse createPost(
-            UUID userId,
-            String content,
-            MultipartFile image
+
+    public String uploadImage(
+            MultipartFile file
     ) {
 
-        String imageUrl = null;
-
         if (
-                image != null &&
-                        !image.isEmpty()
+                file == null ||
+                        file.isEmpty()
         ) {
 
-            imageUrl =
-                    cloudinaryService.uploadImage(image);
+            throw new IllegalArgumentException(
+                    "Image cannot be empty"
+            );
         }
 
-        Post post = Post.builder()
-                .userId(userId)
-                .content(content)
-                .imageUrl(imageUrl)
-                .build();
+        String contentType =
+                file.getContentType();
 
-        post = postRepository.save(post);
+        if (
+                contentType == null ||
+                        !contentType.startsWith("image/")
+        ) {
 
-        return toResponse(
-                post,
-                userId
-        );
+            throw new IllegalArgumentException(
+                    "Only image files are allowed"
+            );
+        }
+
+        try {
+
+            Map<?, ?> result =
+                    cloudinaryService.uploader().upload(
+                            file.getBytes(),
+                            ObjectUtils.asMap(
+                                    "folder",
+                                    "skillcart/posts",
+                                    "resource_type",
+                                    "image"
+                            )
+                    );
+
+            return result
+                    .get("secure_url")
+                    .toString();
+
+        } catch (IOException e) {
+
+            throw new RuntimeException(
+                    "Image upload failed",
+                    e
+            );
+        }
     }
 
     public PostResponse getPost(

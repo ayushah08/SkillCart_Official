@@ -1,6 +1,5 @@
 package com.skillcart_resumeservice.socialservice.controller;
 
-
 import com.skillcart_resumeservice.socialservice.dto.PostResponse;
 import com.skillcart_resumeservice.socialservice.service.FeedService;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +36,31 @@ public class FeedController {
                 (UUID) authentication.getPrincipal();
 
         return feedService.getFeed(
+                userId,
+                PageRequest.of(page, size)
+        );
+    }
+
+
+    @GetMapping("/random")
+    public Page<PostResponse> getRandomPosts(
+            Authentication authentication,
+
+            @RequestParam(
+                    defaultValue = "0"
+            )
+            int page,
+
+            @RequestParam(
+                    defaultValue = "20"
+            )
+            int size
+    ) {
+
+        UUID userId =
+                (UUID) authentication.getPrincipal();
+
+        return feedService.getRandomPosts(
                 userId,
                 PageRequest.of(page, size)
         );

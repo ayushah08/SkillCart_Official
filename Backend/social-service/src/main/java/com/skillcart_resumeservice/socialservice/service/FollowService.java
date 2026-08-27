@@ -6,6 +6,7 @@ import com.skillcart_resumeservice.socialservice.repository.FollowRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -73,5 +74,39 @@ public class FollowService {
 
         return followRepository
                 .countByFollowerId(userId);
+    }
+
+    public boolean isFollowing(
+            UUID followerId,
+            UUID followingId
+    ) {
+
+        return followRepository
+                .existsByFollowerIdAndFollowingId(
+                        followerId,
+                        followingId
+                );
+    }
+
+    public List<UUID> getFollowers(
+            UUID userId
+    ) {
+
+        return followRepository
+                .findByFollowingId(userId)
+                .stream()
+                .map(Follow::getFollowerId)
+                .toList();
+    }
+
+    public List<UUID> getFollowing(
+            UUID userId
+    ) {
+
+        return followRepository
+                .findByFollowerId(userId)
+                .stream()
+                .map(Follow::getFollowingId)
+                .toList();
     }
 }
