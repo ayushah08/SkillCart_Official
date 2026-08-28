@@ -93,7 +93,6 @@ public class ResumeController {
 //    }
 
 
-
     @GetMapping("/me")
     public ResponseEntity<?> getMyResume(
             Authentication authentication
@@ -125,25 +124,31 @@ public class ResumeController {
                 )
         );
     }
-@GetMapping("/user/{userld}") public ResponseEntity<?> getResumeByUserld( @PathVariable UUID userld
 
-){
+    @GetMapping("/user/{userld}")
+    public ResponseEntity<?> getResumeByUserld(@PathVariable UUID userld) {
 
-ResumeEntity resume = resumeService.getResumeByUserl d(userld);
+        ResumeE
+        ntity resume = resumeService.getResumeByUserId(userld);
 
-if (resume == null) { return ResponseEntity.ok( Map.of("hasResume", false)
+        if (resume == null) {
+            return ResponseEntity.ok(Map.of("hasResume", false)
 
-);
+            );
 
-return ResponseEntity.ok( Map.of(
+        }
+            return ResponseEntity.ok(Map.of(
 
-"hasResume", true,
+                            "hasResume", true,
 
-"resumeld", resume.getld()
+                            "resumeld", resume.getId()
 
-)
-);
-}
+                    )
+            );
+        }
 
 
-}
+
+
+    }
+
