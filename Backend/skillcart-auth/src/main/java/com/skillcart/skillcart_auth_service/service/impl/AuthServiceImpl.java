@@ -1,4 +1,4 @@
-package com.skillcart.skillcart_auth_service.service.impl;
+kopackage com.skillcart.skillcart_auth_service.service.impl;
 
 import com.skillcart.skillcart_auth_service.dto.AuthResponse;
 import com.skillcart.skillcart_auth_service.dto.LoginRequest;
@@ -144,7 +144,7 @@ public class AuthServiceImpl implements AuthService {
          *      rid = null
          */
 
-        UUID rid = getResumeId(user1.getId());
+         Long rid = getResumeId(user1.getId());
 
         return new AuthResponse(
                 token,
@@ -160,7 +160,7 @@ public class AuthServiceImpl implements AuthService {
     // GET RESUME ID FROM RESUME SERVICE
     // =========================================================
 
-    private UUID getResumeId(UUID userId) {
+    private Long getResumeId(UUID userId) {
 
         try {
 
