@@ -12,5 +12,5 @@ public class AuthResponse {
     private String token;
     private  String message;
 
-    private UUID Rid;
+    private Long Rid;
 }
