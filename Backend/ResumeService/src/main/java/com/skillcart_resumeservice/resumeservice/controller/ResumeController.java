@@ -121,7 +121,7 @@ public class ResumeController {
         );
     }
 
-    @GetMapping("/user/{userld}")
+    @GetMapping("/user/{userId}")
 
     public ResponseEntity<?> getResumeByUserId(@PathVariable UUID userId) {
 

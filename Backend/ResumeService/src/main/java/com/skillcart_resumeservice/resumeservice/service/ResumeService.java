@@ -52,6 +52,7 @@ public class ResumeService {
         // 2. Call AI service with valid ID
         String aiParsedData = aiResponse(resumeEntity);
 
+        UIDSetter(userId);
         // 3. Update parsed JSON
         resumeEntity.setParsedJson(aiParsedData);
         return resumeEntity.getId();

@@ -148,6 +148,7 @@ public class AuthServiceImpl implements AuthService {
 
         Long rid = getResumeId(user1.getId());
 
+
         return new AuthResponse(
                 token,
                 "Welcome Back: "
