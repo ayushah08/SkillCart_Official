@@ -166,27 +166,25 @@ public class AuthServiceImpl implements AuthService {
 
     private Long getResumeId(UUID userId) {
 
-        try {
+        ResumeCheckResponse response =
+                restClient.get()
+                        .uri(
+                                "https://skillcart-resume.onrender.com/api/v1/resume/user/{userId}",
+                                userId
+                        )
+                        .retrieve()
+                        .body(ResumeCheckResponse.class);
 
-            ResumeCheckResponse response =
-                    restClient.get()
-                            .uri(
-                                    "https://skillcart-resume.onrender.com/api/v1/resume/user/"
-                                            + userId
-                            )
-                            .retrieve()
-                            .body(ResumeCheckResponse.class);
+        if (response == null) {
+            throw new RuntimeException(
+                    "Resume Service returned null response"
+            );
+        }
 
-            if (response != null &&
-                    Boolean.TRUE.equals(response.getHasResume())) {
-
-                return response.getResumeId();
-            }
-
-            return null;
-
-        } catch (Exception e) {
+        if (!Boolean.TRUE.equals(response.getHasResume())) {
             return null;
         }
+
+        return response.getResumeId();
     }
 }
