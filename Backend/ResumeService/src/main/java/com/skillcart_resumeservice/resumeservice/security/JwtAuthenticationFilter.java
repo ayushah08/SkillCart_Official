@@ -1,16 +1,11 @@
 package com.skillcart_resumeservice.resumeservice.security;
 
 import com.skillcart_resumeservice.resumeservice.service.JwtService;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -19,22 +14,25 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.UUID;
+
 @Component
 @RequiredArgsConstructor
-public class JwtAuthenticationFilter
-        extends OncePerRequestFilter {
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
 
     @Override
-    protected boolean shouldNotFilter(
-            HttpServletRequest request
-    ) {
+    protected boolean shouldNotFilter(HttpServletRequest request) {
 
-        return request.getServletPath()
-                .startsWith(
-                        "/api/v1/resume/user/"
-                );
+        String path = request.getRequestURI();
+
+        boolean skip =
+                path.startsWith("/api/v1/resume/user/");
+
+        System.out.println("JWT FILTER PATH: " + path);
+        System.out.println("SKIPPING JWT FILTER: " + skip);
+
+        return skip;
     }
 
     @Override
@@ -50,21 +48,17 @@ public class JwtAuthenticationFilter
         if (authHeader == null ||
                 !authHeader.startsWith("Bearer ")) {
 
-            filterChain.doFilter(
-                    request,
-                    response
-            );
-
+            filterChain.doFilter(request, response);
             return;
         }
 
-        String token =
-                authHeader.substring(7);
-
         try {
 
-            UUID userId =
-                    UUID.fromString(jwtService.extractUserId(token));
+            String token = authHeader.substring(7);
+
+            UUID userId = UUID.fromString(
+                    jwtService.extractUserId(token)
+            );
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
@@ -79,6 +73,8 @@ public class JwtAuthenticationFilter
 
         } catch (Exception e) {
 
+            SecurityContextHolder.clearContext();
+
             response.setStatus(
                     HttpServletResponse.SC_UNAUTHORIZED
             );
@@ -86,9 +82,6 @@ public class JwtAuthenticationFilter
             return;
         }
 
-        filterChain.doFilter(
-                request,
-                response
-        );
+        filterChain.doFilter(request, response);
     }
 }

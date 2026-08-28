@@ -23,7 +23,7 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
 
-                .cors(cors -> {})
+                .cors(AbstractHttpConfigurer::disable)
 
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
@@ -33,14 +33,14 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
+                        // PUBLIC ENDPOINT
                         .requestMatchers(
-                                "/api/v1/resume/user/**"
-                        )
-                        .permitAll()
+                                "/api/v1/resume/user/{userId}"
+                        ).permitAll()
 
-                        .requestMatchers(
-                                "/**"
-                        ).authenticated()
+                        // EVERYTHING ELSE NEEDS JWT
+                        .anyRequest()
+                        .authenticated()
                 )
 
                 .addFilterBefore(
