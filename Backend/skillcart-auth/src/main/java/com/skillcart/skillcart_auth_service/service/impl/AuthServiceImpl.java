@@ -3,6 +3,7 @@ package com.skillcart.skillcart_auth_service.service.impl;
 import com.skillcart.skillcart_auth_service.dto.AuthResponse;
 import com.skillcart.skillcart_auth_service.dto.LoginRequest;
 import com.skillcart.skillcart_auth_service.dto.RegisterRequest;
+import com.skillcart.skillcart_auth_service.dto.ResumeCheckResponse;
 import com.skillcart.skillcart_auth_service.entity.User;
 import com.skillcart.skillcart_auth_service.enums.Role;
 import com.skillcart.skillcart_auth_service.exception.EmailAlreadyExistsException;
@@ -167,24 +168,24 @@ public class AuthServiceImpl implements AuthService {
 
         try {
 
-            return restClient.get()
-                    .uri(
-                            "https://skillcart-resume.onrender.com/api/v1/resume/user/"
-                                    + userId
-                    )
-                    .retrieve()
-                    .body(Long.class);
+            ResumeCheckResponse response =
+                    restClient.get()
+                            .uri(
+                                    "https://skillcart-resume.onrender.com/api/v1/resume/user/"
+                                            + userId
+                            )
+                            .retrieve()
+                            .body(ResumeCheckResponse.class);
+
+            if (response != null &&
+                    Boolean.TRUE.equals(response.getHasResume())) {
+
+                return response.getResumeId();
+            }
+
+            return null;
 
         } catch (Exception e) {
-
-            /*
-             * If Resume Service says that the user
-             * doesn't have a resume, return null.
-             *
-             * Frontend will then redirect the user
-             * to resume upload.
-             */
-
             return null;
         }
     }
