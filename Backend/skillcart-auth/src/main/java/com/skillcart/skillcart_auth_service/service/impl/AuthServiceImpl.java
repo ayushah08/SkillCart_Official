@@ -132,6 +132,8 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtService.generateJwtToken(
                 (UserDetails) user1
         );
+        user1.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user1);
 
         /*
          * Ask Resume Service whether this user
