@@ -125,6 +125,25 @@ public class ResumeController {
                 )
         );
     }
+@GetMapping("/user/{userld}") public ResponseEntity<?> getResumeByUserld( @PathVariable UUID userld
+
+){
+
+ResumeEntity resume = resumeService.getResumeByUserl d(userld);
+
+if (resume == null) { return ResponseEntity.ok( Map.of("hasResume", false)
+
+);
+
+return ResponseEntity.ok( Map.of(
+
+"hasResume", true,
+
+"resumeld", resume.getld()
+
+)
+);
+}
 
 
 }

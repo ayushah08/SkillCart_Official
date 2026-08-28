@@ -144,7 +144,7 @@ public class AuthServiceImpl implements AuthService {
          *      rid = null
          */
 
-        Long rid = getResumeId(user1.getId());
+        UUID rid = getResumeId(user1.getId());
 
         return new AuthResponse(
                 token,
@@ -160,7 +160,7 @@ public class AuthServiceImpl implements AuthService {
     // GET RESUME ID FROM RESUME SERVICE
     // =========================================================
 
-    private Long getResumeId(UUID userId) {
+    private UUID getResumeId(UUID userId) {
 
         try {
 
@@ -170,7 +170,7 @@ public class AuthServiceImpl implements AuthService {
                                     + userId
                     )
                     .retrieve()
-                    .body(Long.class);
+                    .body(UUID.class);
 
         } catch (Exception e) {
 
