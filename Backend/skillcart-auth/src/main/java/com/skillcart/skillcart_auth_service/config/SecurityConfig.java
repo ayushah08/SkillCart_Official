@@ -1,19 +1,17 @@
 package com.skillcart.skillcart_auth_service.config;
 
 import com.skillcart.skillcart_auth_service.security.JwtAuthenticationFilter;
- import lombok.RequiredArgsConstructor;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-
 import org.springframework.security.config.http.SessionCreationPolicy;
-
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -34,7 +32,6 @@ public class SecurityConfig {
     ) throws Exception {
 
         http
-
                 .csrf(AbstractHttpConfigurer::disable)
 
                 .cors(cors -> {})
@@ -47,13 +44,16 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
+                        // NORMAL AUTH APIs
                         .requestMatchers(
-                                "/api/v1/auth/**"
+                                "/api/v1/auth/register",
+                                "/api/v1/auth/login"
                         ).permitAll()
 
+                        // OAuth endpoints
                         .requestMatchers(
                                 "/oauth2/**",
-                                "/login/**"
+                                "/login/oauth2/**"
                         ).permitAll()
 
                         .requestMatchers(
@@ -62,6 +62,17 @@ public class SecurityConfig {
 
                         .anyRequest()
                         .authenticated()
+                )
+
+                .exceptionHandling(exception ->
+                        exception.defaultAuthenticationEntryPointFor(
+                                new HttpStatusEntryPoint(
+                                        HttpStatus.UNAUTHORIZED
+                                ),
+                                request ->
+                                        request.getRequestURI()
+                                                .startsWith("/api/")
+                        )
                 )
 
                 .oauth2Login(oauth2 ->
