@@ -23,6 +23,7 @@ public class ResumeService {
     private final RestClient restClient;
     private final ResumeRepository resumeRepository;
     private final ObjectMapper objectMapper;
+    private final JwtService jwtService;
 
     Logger logger = LoggerFactory.getLogger(ResumeService.class);
 
@@ -44,7 +45,7 @@ public class ResumeService {
         resumeEntity.setFileType(fileType);
         resumeEntity.setFileData(file.getBytes());
         resumeEntity.setParsedJson(null);
-
+        resumeEntity.setUserId(userId);
         // 1. Save FIRST to generate the primary key ID
         resumeEntity = resumeRepository.save(resumeEntity);
 

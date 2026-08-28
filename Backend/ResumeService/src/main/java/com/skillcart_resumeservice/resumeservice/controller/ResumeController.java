@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 
@@ -31,22 +32,19 @@ public class ResumeController {
     public ResponseEntity<?> uploadResume(
             @RequestParam("file") MultipartFile file,
             Authentication authentication
-    ) {
+    ) throws IOException, InterruptedException {
 
+
+        UUID userId = (UUID) authentication.getPrincipal();
         try {
+            Long resumeId = resumeService.storeResume(
+                    file,
+                    userId
 
-            UUID userId =
-                    (UUID) authentication.getPrincipal();
-
-
-            Long resumeId =
-                    resumeService.storeResume(
-                            file,
-                            userId
-                    );
+            );
 
 
-            return ResponseEntity.ok(
+        return ResponseEntity.ok(
                     Map.of(
                             "success", true,
                             "resumeId", resumeId
