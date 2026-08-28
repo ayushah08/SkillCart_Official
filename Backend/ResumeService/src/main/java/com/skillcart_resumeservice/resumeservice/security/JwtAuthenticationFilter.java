@@ -9,37 +9,35 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.UUID;
-
 @Component
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
-
-    @Value("${jwt.secret}")
-    private String secret;
-
+@RequiredArgsConstructor
+public class JwtAuthenticationFilter
+        extends OncePerRequestFilter {
 
     private final JwtService jwtService;
 
-    public JwtAuthenticationFilter(JwtService jwtService) {
-        this.jwtService = jwtService;
+    @Override
+    protected boolean shouldNotFilter(
+            HttpServletRequest request
+    ) {
+
+        return request.getServletPath()
+                .startsWith(
+                        "/api/v1/resume/user/"
+                );
     }
 
-    private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(
-                Decoders.BASE64.decode(secret)
-        );
-    }
-
-   @Override
+    @Override
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
@@ -49,8 +47,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String authHeader =
                 request.getHeader("Authorization");
 
-        // No JWT → don't reject here
-        // Continue to Spring Security
         if (authHeader == null ||
                 !authHeader.startsWith("Bearer ")) {
 
