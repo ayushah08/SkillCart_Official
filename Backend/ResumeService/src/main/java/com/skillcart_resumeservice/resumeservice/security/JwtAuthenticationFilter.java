@@ -1,5 +1,6 @@
 package com.skillcart_resumeservice.resumeservice.security;
 
+import com.skillcart_resumeservice.resumeservice.service.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -25,13 +26,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Value("${jwt.secret}")
     private String secret;
 
+
+    private final JwtService jwtService;
+
+    public JwtAuthenticationFilter(JwtService jwtService) {
+        this.jwtService = jwtService;
+    }
+
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(
                 Decoders.BASE64.decode(secret)
         );
     }
 
-    @Override
+   @Override
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
@@ -41,11 +49,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String authHeader =
                 request.getHeader("Authorization");
 
-        if (
-                authHeader == null ||
-                        !authHeader.startsWith("Bearer ")
-        ) {
-            filterChain.doFilter(request, response);
+        // No JWT → don't reject here
+        // Continue to Spring Security
+        if (authHeader == null ||
+                !authHeader.startsWith("Bearer ")) {
+
+            filterChain.doFilter(
+                    request,
+                    response
+            );
+
             return;
         }
 
@@ -54,47 +67,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
 
-            Claims claims =
-                    Jwts.parser()
-                            .verifyWith(getSigningKey())
-                            .build()
-                            .parseSignedClaims(token)
-                            .getPayload();
+            UUID userId =
+                    UUID.fromString(jwtService.extractUserId(token));
 
-            String userId =
-                    claims.get(
-                            "userId",
-                            String.class
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            userId,
+                            null,
+                            Collections.emptyList()
                     );
 
-            if (
-                    userId != null &&
-                            SecurityContextHolder
-                                    .getContext()
-                                    .getAuthentication() == null
-            ) {
-
-                UUID uuid =
-                        UUID.fromString(userId);
-
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                uuid,
-                                null,
-                                Collections.emptyList()
-                        );
-
-                SecurityContextHolder
-                        .getContext()
-                        .setAuthentication(authentication);
-            }
+            SecurityContextHolder
+                    .getContext()
+                    .setAuthentication(authentication);
 
         } catch (Exception e) {
 
-            // Invalid token -> leave request unauthenticated
-            // Spring Security will reject protected endpoints.
+            response.setStatus(
+                    HttpServletResponse.SC_UNAUTHORIZED
+            );
+
+            return;
         }
 
-        filterChain.doFilter(request, response);
+        filterChain.doFilter(
+                request,
+                response
+        );
     }
 }
