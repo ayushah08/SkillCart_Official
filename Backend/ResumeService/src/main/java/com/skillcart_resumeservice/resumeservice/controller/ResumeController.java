@@ -2,15 +2,13 @@ package com.skillcart_resumeservice.resumeservice.controller;
 
 import com.skillcart_resumeservice.resumeservice.entity.ResumeEntity;
 import com.skillcart_resumeservice.resumeservice.service.ResumeService;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 
@@ -126,29 +124,27 @@ public class ResumeController {
     }
 
     @GetMapping("/user/{userld}")
-    public ResponseEntity<?> getResumeByUserld(@PathVariable UUID userld) {
 
-        ResumeE
-        ntity resume = resumeService.getResumeByUserId(userld);
+    public ResponseEntity<?> getResumeByUserId(@PathVariable UUID userId) {
+
+        ResumeEntity resume = resumeService.getResumeByUserId(userId);
 
         if (resume == null) {
-            return ResponseEntity.ok(Map.of("hasResume", false)
-
-            );
-
-        }
-            return ResponseEntity.ok(Map.of(
-
-                            "hasResume", true,
-
-                            "resumeld", resume.getId()
-
-                    )
-            );
+            return ResponseEntity.ok(Map.of("hasResume", false));
         }
 
-
+        return ResponseEntity.ok(Map.of(
+                "hasResume", true,
+                "resumeId", resume.getId()
+        ));
 
 
     }
+
+
+
+
+
+
+}
 
