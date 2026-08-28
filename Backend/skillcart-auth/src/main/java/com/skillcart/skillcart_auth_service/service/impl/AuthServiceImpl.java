@@ -1,4 +1,4 @@
-kopackage com.skillcart.skillcart_auth_service.service.impl;
+package com.skillcart.skillcart_auth_service.service.impl;
 
 import com.skillcart.skillcart_auth_service.dto.AuthResponse;
 import com.skillcart.skillcart_auth_service.dto.LoginRequest;
