@@ -150,7 +150,7 @@ public class AuthServiceImpl implements AuthService {
                 token,
                 "Welcome Back: "
                         + user1.getUsername()
-                        + " Login Successful",
+                        + " Login Successful" + "Resume Id is",
                 rid
         );
     }
