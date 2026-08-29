@@ -41,8 +41,11 @@ public class PostController {
         UUID userId =
                 (UUID) authentication.getPrincipal();
 
+        String username = (String) authentication.getPrincipal();
+
         return postService.createPost(
                 userId,
+                username,
                 content,
                 image
         );

@@ -156,6 +156,8 @@ public class PostService {
 
                 .userId(post.getUserId())
 
+                .userName(post.getUserName())
+
                 .content(post.getContent())
 
                 .imageUrl(post.getImageUrl())
@@ -191,6 +193,7 @@ public class PostService {
 
     public Post createPost(
             UUID userId,
+            String userName ,
             String content,
             MultipartFile image
     ) {
@@ -218,6 +221,7 @@ public class PostService {
         Post post = new Post();
 
         post.setUserId(userId);
+        post.setUserName(userName);
 
         post.setContent(
                 content != null

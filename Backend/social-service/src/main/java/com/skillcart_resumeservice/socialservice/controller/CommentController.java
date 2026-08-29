@@ -32,9 +32,12 @@ public class CommentController {
         UUID userId =
                 (UUID) authentication.getPrincipal();
 
+      String userName = (String) authentication.getPrincipal();
+
         return commentService.addComment(
                 postId,
                 userId,
+                userName,
                 request.getContent()
         );
     }

@@ -14,6 +14,8 @@ public class PostResponse {
 
     private UUID userId;
 
+    private String userName;
+
     private String content;
 
     private String imageUrl;

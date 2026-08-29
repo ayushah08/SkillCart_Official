@@ -25,6 +25,8 @@ public class Comment {
     @Column(nullable = false)
     private UUID userId;
 
+    private String userName;
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 

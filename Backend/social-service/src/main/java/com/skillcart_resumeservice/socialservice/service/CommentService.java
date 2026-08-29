@@ -21,7 +21,7 @@ public class CommentService {
     public Comment addComment(
             UUID postId,
             UUID userId,
-            String content
+            String userName, String content
     ) {
 
         if (!postRepository.existsById(postId)) {
@@ -35,6 +35,7 @@ public class CommentService {
                 Comment.builder()
                         .postId(postId)
                         .userId(userId)
+                        .userName(userName)
                         .content(content)
                         .build();
 

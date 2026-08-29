@@ -28,6 +28,8 @@ public class Post {
     @Column(length = 1000)
     private String imageUrl;
 
+    private String userName;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
