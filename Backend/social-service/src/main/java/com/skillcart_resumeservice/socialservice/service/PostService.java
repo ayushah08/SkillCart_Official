@@ -28,28 +28,34 @@ public class PostService {
     private final CloudinaryService cloudinaryService;
 
 
-    public String uploadImage(
-            MultipartFile file
-    ) {
+    public String uploadImage(MultipartFile file) {
 
-        if (
-                file == null ||
-                        file.isEmpty()
-        ) {
+        System.out.println("========== IMAGE UPLOAD START ==========");
 
+        if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException(
                     "Image cannot be empty"
             );
         }
 
-        String contentType =
-                file.getContentType();
+        System.out.println(
+                "FILE NAME: " + file.getOriginalFilename()
+        );
+
+        System.out.println(
+                "CONTENT TYPE: " + file.getContentType()
+        );
+
+        System.out.println(
+                "FILE SIZE: " + file.getSize()
+        );
+
+        String contentType = file.getContentType();
 
         if (
                 contentType == null ||
                         !contentType.startsWith("image/")
         ) {
-
             throw new IllegalArgumentException(
                     "Only image files are allowed"
             );
@@ -57,25 +63,61 @@ public class PostService {
 
         try {
 
+            System.out.println(
+                    "CALLING CLOUDINARY..."
+            );
+
             Map<?, ?> result =
-                    cloudinaryService.uploadFile( file.getBytes(),
+                    cloudinaryService.uploadFile(
+                            file.getBytes(),
                             ObjectUtils.asMap(
                                     "folder",
                                     "skillcart/posts",
                                     "resource_type",
                                     "image"
-                            ));
+                            )
+                    );
 
+            System.out.println(
+                    "CLOUDINARY RESPONSE: " + result
+            );
 
+            Object secureUrl =
+                    result.get("secure_url");
 
-            return result
-                    .get("secure_url")
-                    .toString();
+            if (secureUrl == null) {
+                throw new RuntimeException(
+                        "Cloudinary did not return secure_url"
+                );
+            }
 
-        } catch (IOException e) {
+            System.out.println(
+                    "IMAGE UPLOAD SUCCESS: " + secureUrl
+            );
+
+            return secureUrl.toString();
+
+        } catch (Exception e) {
+
+            System.out.println(
+                    "========== CLOUDINARY UPLOAD FAILED =========="
+            );
+
+            System.out.println(
+                    "ERROR TYPE: "
+                            + e.getClass().getName()
+            );
+
+            System.out.println(
+                    "ERROR MESSAGE: "
+                            + e.getMessage()
+            );
+
+            e.printStackTrace();
 
             throw new RuntimeException(
-                    "Image upload failed",
+                    "Image upload failed: "
+                            + e.getMessage(),
                     e
             );
         }
