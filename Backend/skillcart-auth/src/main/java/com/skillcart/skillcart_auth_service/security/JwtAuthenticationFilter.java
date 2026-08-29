@@ -24,6 +24,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final CustomUserDetailsService customUserDetailsService;
 
     @Override
+    protected boolean shouldNotFilter(
+            HttpServletRequest request
+    ) {
+
+        String path = request.getServletPath();
+
+        return path.equals("/api/v1/auth/login")
+                || path.equals("/api/v1/auth/register")
+                || path.startsWith("/oauth2/")
+                || path.startsWith("/login/oauth2/")
+                || path.equals("/actuator/health");
+    }
+
+    @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
@@ -37,7 +51,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (authHeader == null ||
                 !authHeader.startsWith("Bearer ")) {
 
-            filterChain.doFilter(request, response);
+            filterChain.doFilter(
+                    request,
+                    response
+            );
+
             return;
         }
 
@@ -58,7 +76,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 UserDetails userDetails =
                         customUserDetailsService
-                                .loadUserByUsername(username);
+                                .loadUserByUsername(
+                                        username
+                                );
 
                 boolean valid =
                         jwtService.validateJwtToken(
@@ -66,36 +86,62 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 userDetails
                         );
 
-                if (valid) {
-
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(
-                                    userDetails,
-                                    null,
-                                    userDetails.getAuthorities()
-                            );
-
-                    authentication.setDetails(
-                            new WebAuthenticationDetailsSource()
-                                    .buildDetails(request)
-                    );
+                if (!valid) {
 
                     SecurityContextHolder
-                            .getContext()
-                            .setAuthentication(authentication);
+                            .clearContext();
+
+                    response.setStatus(
+                            HttpServletResponse
+                                    .SC_UNAUTHORIZED
+                    );
+
+                    return;
                 }
+
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities()
+                        );
+
+                authentication.setDetails(
+                        new WebAuthenticationDetailsSource()
+                                .buildDetails(request)
+                );
+
+                SecurityContextHolder
+                        .getContext()
+                        .setAuthentication(
+                                authentication
+                        );
             }
 
         } catch (Exception e) {
 
+            SecurityContextHolder
+                    .clearContext();
+
             System.out.println(
                     "JWT Authentication failed: "
-                            + e.getClass().getSimpleName()
+                            + e.getClass()
+                            .getSimpleName()
                             + " - "
                             + e.getMessage()
             );
+
+            response.setStatus(
+                    HttpServletResponse
+                            .SC_UNAUTHORIZED
+            );
+
+            return;
         }
 
-        filterChain.doFilter(request, response);
+        filterChain.doFilter(
+                request,
+                response
+        );
     }
 }
