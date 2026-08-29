@@ -3,6 +3,7 @@ package com.skillcart_resumeservice.resumeservice.controller;
 import com.skillcart_resumeservice.resumeservice.entity.ResumeEntity;
 import com.skillcart_resumeservice.resumeservice.service.ResumeService;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -88,53 +89,51 @@ public class ResumeController {
 //
 //    }
 
-
-    @GetMapping("/me")
-    public ResponseEntity<?> getMyResume(
-            Authentication authentication
-    ) {
-
-        UUID userId =
-                (UUID) authentication.getPrincipal();
-
-
-        ResumeEntity resume =
-                resumeService.getResumeByUserId(userId);
-
-
-        if (resume == null) {
-
-            return ResponseEntity.ok(
-                    Map.of(
-                            "hasResume", false,
-                            "resumeId", (Object) null
-                    )
-            );
-        }
-
-
-        return ResponseEntity.ok(
-                Map.of(
-                        "hasResume", true,
-                        "resumeId", resume.getId()
-                )
-        );
-    }
+//
+//    @GetMapping("/me")
+//    public ResponseEntity<?> getMyResume(
+//            Authentication authentication
+//    ) {
+//
+//        UUID userId =
+//                (UUID) authentication.getPrincipal();
+//
+//
+//        Long resume =
+//                resumeService.getResumeByUserId(userId);
+//
+//
+//        if (resume == null) {
+//
+//            return ResponseEntity.ok(
+//                    Map.of(
+//                            "hasResume", false,
+//                            "resumeId", (Object) null
+//                    )
+//            );
+//        }
+//
+//
+//        return ResponseEntity.ok(
+//                Map.of(
+//                        "hasResume", true,
+//                        "resumeId", resume.getId()
+//                )
+//        );
+//    }
 
     @GetMapping("/user/{userId}")
 
-    public ResponseEntity<?> getResumeByUserId(@PathVariable UUID userId) {
+    public ResponseEntity<Long> getResumeByUserId(@PathVariable UUID userId) {
 
-        ResumeEntity resume = resumeService.getResumeByUserId(userId);
+        Long resume = resumeService.getResumeByUserId(userId);
 
         if (resume == null) {
-            return ResponseEntity.ok(Map.of("hasResume", false));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
 
-        return ResponseEntity.ok(Map.of(
-                "hasResume", true,
-                "resumeId", resume.getId()
-        ));
+        return ResponseEntity.ok(resume);
+
 
 
     }

@@ -94,7 +94,7 @@ public class ResumeService {
     }
 
 
-    public ResumeEntity getResumeByUserId(
+    public Long getResumeByUserId(
             UUID userId
     ) {
 
@@ -113,6 +113,6 @@ public class ResumeService {
                         : "NOT FOUND"
         );
 
-        return resume;
+        return resume.getId();
     }
 }
