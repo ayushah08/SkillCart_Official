@@ -61,14 +61,12 @@ public class JwtAuthenticationFilter
 
             String token =
                     authHeader.substring(7);
-
             if (!jwtService.validateToken(token)) {
 
                 SecurityContextHolder.clearContext();
 
-                filterChain.doFilter(
-                        request,
-                        response
+                response.setStatus(
+                        HttpServletResponse.SC_UNAUTHORIZED
                 );
 
                 return;
