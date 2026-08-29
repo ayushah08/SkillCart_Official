@@ -29,8 +29,21 @@ public class JwtAuthenticationFilter
             FilterChain filterChain
     ) throws ServletException, IOException {
 
+        System.out.println("====================================");
+        System.out.println("SOCIAL JWT FILTER CALLED");
+        System.out.println("METHOD: " + request.getMethod());
+        System.out.println("URI: " + request.getRequestURI());
+        System.out.println("CONTENT TYPE: " + request.getContentType());
+        System.out.println("AUTH HEADER: " +
+                (request.getHeader("Authorization") != null
+                        ? "PRESENT"
+                        : "MISSING"));
+        System.out.println("====================================");
+
         // Allow CORS preflight
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+
+            System.out.println("OPTIONS REQUEST - SKIPPING JWT");
 
             filterChain.doFilter(
                     request,
@@ -43,11 +56,12 @@ public class JwtAuthenticationFilter
         String authHeader =
                 request.getHeader("Authorization");
 
-        // No token
         if (
                 authHeader == null ||
                         !authHeader.startsWith("Bearer ")
         ) {
+
+            System.out.println("NO VALID BEARER TOKEN");
 
             filterChain.doFilter(
                     request,
@@ -61,7 +75,19 @@ public class JwtAuthenticationFilter
 
             String token =
                     authHeader.substring(7);
-            if (!jwtService.validateToken(token)) {
+
+            System.out.println(
+                    "VALIDATING JWT..."
+            );
+
+            boolean valid =
+                    jwtService.validateToken(token);
+
+            System.out.println(
+                    "JWT VALID: " + valid
+            );
+
+            if (!valid) {
 
                 SecurityContextHolder.clearContext();
 
@@ -77,6 +103,14 @@ public class JwtAuthenticationFilter
 
             String userId =
                     jwtService.extractUserId(token);
+
+            System.out.println(
+                    "JWT USERNAME: " + username
+            );
+
+            System.out.println(
+                    "JWT USER ID: " + userId
+            );
 
             if (
                     username != null &&
@@ -100,19 +134,49 @@ public class JwtAuthenticationFilter
                                 )
                         );
 
-                // Store username separately
-                authentication.setDetails(username);
+                authentication.setDetails(
+                        username
+                );
 
                 SecurityContextHolder
                         .getContext()
                         .setAuthentication(
                                 authentication
                         );
+
+                System.out.println(
+                        "JWT AUTHENTICATION SUCCESS"
+                );
+
+            } else {
+
+                System.out.println(
+                        "JWT DATA MISSING OR USER ALREADY AUTHENTICATED"
+                );
             }
 
         } catch (Exception e) {
 
             SecurityContextHolder.clearContext();
+
+            System.out.println("====================================");
+            System.out.println("JWT AUTHENTICATION FAILED");
+            System.out.println(
+                    "ERROR TYPE: "
+                            + e.getClass().getName()
+            );
+            System.out.println(
+                    "ERROR MESSAGE: "
+                            + e.getMessage()
+            );
+            e.printStackTrace();
+            System.out.println("====================================");
+
+            response.setStatus(
+                    HttpServletResponse.SC_UNAUTHORIZED
+            );
+
+            return;
         }
 
         filterChain.doFilter(

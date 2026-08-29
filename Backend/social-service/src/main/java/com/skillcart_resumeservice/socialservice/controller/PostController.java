@@ -21,27 +21,34 @@ public class PostController {
 
     private final PostService postService;
 
-    @PostMapping(
-            consumes = "multipart/form-data")
+    @PostMapping(consumes = "multipart/form-data")
     public Post createPost(
             Authentication authentication,
-
-            @RequestPart(
-                    required = false
-            )
-            @Size(max = 5000)
+            @RequestParam(value = "content", required = false)
             String content,
-
-            @RequestPart(
-                    required = false
-            )
+            @RequestParam(value = "image", required = false)
             MultipartFile image
     ) {
+
+        System.out.println(
+                "🔥 CREATE POST CONTROLLER REACHED"
+        );
+
+        System.out.println(
+                "Content: " + content
+        );
+
+        System.out.println(
+                "Image present: "
+                        + (image != null)
+        );
+
         UUID userId =
                 (UUID) authentication.getPrincipal();
 
         String username =
                 (String) authentication.getDetails();
+
         return postService.createPost(
                 userId,
                 username,
