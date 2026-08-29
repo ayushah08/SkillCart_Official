@@ -134,6 +134,8 @@ public class AuthServiceImpl implements AuthService {
                 (UserDetails) user1
         );
         user1.setUpdatedAt(LocalDateTime.now());
+        Long rid = getResumeId(user1.getId());
+
         userRepository.save(user1);
 
         /*
@@ -147,7 +149,6 @@ public class AuthServiceImpl implements AuthService {
          *      rid = null
          */
 
-        Long rid = getResumeId(user1.getId());
 
 
         return new AuthResponse(
@@ -166,25 +167,17 @@ public class AuthServiceImpl implements AuthService {
 
     private Long getResumeId(UUID userId) {
 
-        ResumeCheckResponse response =
+        Long response =
                 restClient.get()
                         .uri(
                                 "https://skillcart-resume.onrender.com/api/v1/resume/user/{userId}",
                                 userId
                         )
                         .retrieve()
-                        .body(ResumeCheckResponse.class);
+                        .body(Long.class);
 
-        if (response == null) {
-            throw new RuntimeException(
-                    "Resume Service returned null response"
-            );
-        }
 
-        if (!Boolean.TRUE.equals(response.getHasResume())) {
-            return null;
-        }
 
-        return response.getResumeId();
+        return response;
     }
 }
