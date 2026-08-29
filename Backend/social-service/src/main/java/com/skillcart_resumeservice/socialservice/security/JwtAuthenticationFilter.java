@@ -179,6 +179,12 @@ public class JwtAuthenticationFilter
             return;
         }
 
+        System.out.println(
+                "FINAL AUTHENTICATION: " +
+                        SecurityContextHolder
+                                .getContext()
+                                .getAuthentication()
+        );
         filterChain.doFilter(
                 request,
                 response

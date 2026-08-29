@@ -38,8 +38,18 @@ public class FollowController {
             @PathVariable UUID userId
     ) {
 
+        System.out.println("================================");
+        System.out.println("🔥 UNFOLLOW CONTROLLER REACHED");
+        System.out.println("AUTHENTICATION: " + authentication);
+        System.out.println("TARGET USER ID: " + userId);
+        System.out.println("================================");
+
         UUID currentUser =
                 (UUID) authentication.getPrincipal();
+
+        System.out.println(
+                "CURRENT USER ID: " + currentUser
+        );
 
         followService.unfollow(
                 currentUser,

@@ -1,8 +1,8 @@
 package com.skillcart_resumeservice.socialservice.service;
 
-
 import com.skillcart_resumeservice.socialservice.entity.Follow;
 import com.skillcart_resumeservice.socialservice.repository.FollowRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,28 +15,24 @@ public class FollowService {
 
     private final FollowRepository followRepository;
 
+
+    @Transactional
     public void follow(
             UUID followerId,
             UUID followingId
     ) {
 
-        if (
-                followerId.equals(followingId)
-        ) {
-
+        if (followerId.equals(followingId)) {
             throw new RuntimeException(
                     "You cannot follow yourself"
             );
         }
 
-        if (
-                followRepository
-                        .existsByFollowerIdAndFollowingId(
-                                followerId,
-                                followingId
-                        )
-        ) {
-
+        if (followRepository
+                .existsByFollowerIdAndFollowingId(
+                        followerId,
+                        followingId
+                )) {
             return;
         }
 
@@ -48,33 +44,39 @@ public class FollowService {
         );
     }
 
+
+    // 🔥 IMPORTANT
+    @Transactional
     public void unfollow(
             UUID followerId,
             UUID followingId
     ) {
+
+        System.out.println("🔥 UNFOLLOW SERVICE CALLED");
+        System.out.println("FOLLOWER: " + followerId);
+        System.out.println("FOLLOWING: " + followingId);
 
         followRepository
                 .deleteByFollowerIdAndFollowingId(
                         followerId,
                         followingId
                 );
+
+        System.out.println("🔥 UNFOLLOW DELETE COMPLETED");
     }
 
-    public long followersCount(
-            UUID userId
-    ) {
 
+    public long followersCount(UUID userId) {
         return followRepository
                 .countByFollowingId(userId);
     }
 
-    public long followingCount(
-            UUID userId
-    ) {
 
+    public long followingCount(UUID userId) {
         return followRepository
                 .countByFollowerId(userId);
     }
+
 
     public boolean isFollowing(
             UUID followerId,
@@ -88,6 +90,7 @@ public class FollowService {
                 );
     }
 
+
     public List<UUID> getFollowers(
             UUID userId
     ) {
@@ -98,6 +101,7 @@ public class FollowService {
                 .map(Follow::getFollowerId)
                 .toList();
     }
+
 
     public List<UUID> getFollowing(
             UUID userId
