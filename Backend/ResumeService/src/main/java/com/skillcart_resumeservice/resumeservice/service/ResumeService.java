@@ -94,25 +94,35 @@ public class ResumeService {
     }
 
 
+    @Transactional(readOnly = true)
     public Long getResumeByUserId(
             UUID userId
     ) {
 
         logger.info(
-                "Searching resume for UID: {}",
+                "Searching resume ID for UID: {}",
                 userId
         );
 
-        ResumeEntity resume =
-                resumeRepository.findByUserId(userId);
+        Long resumeId =
+                resumeRepository
+                        .findResumeIdByUserId(userId);
+
+        if (resumeId == null) {
+
+            logger.info(
+                    "No resume found for UID: {}",
+                    userId
+            );
+
+            return null;
+        }
 
         logger.info(
-                "Resume search result: {}",
-                resume != null
-                        ? "RID = " + resume.getId()
-                        : "NOT FOUND"
+                "Resume found. RID: {}",
+                resumeId
         );
 
-        return resume.getId();
+        return resumeId;
     }
 }

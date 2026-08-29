@@ -1,6 +1,7 @@
 package com.skillcart_resumeservice.resumeservice.controller;
 
 import com.skillcart_resumeservice.resumeservice.entity.ResumeEntity;
+import com.skillcart_resumeservice.resumeservice.service.ResumeCheckResponse;
 import com.skillcart_resumeservice.resumeservice.service.ResumeService;
 
 import org.springframework.http.HttpStatus;
@@ -123,25 +124,44 @@ public class ResumeController {
 //    }
 
     @GetMapping("/user/{userId}")
+    public ResponseEntity<ResumeCheckResponse> getResumeByUserId(
+            @PathVariable UUID userId
+    ) {
 
-    public ResponseEntity<Long> getResumeByUserId(@PathVariable UUID userId) {
+        System.out.println(
+                "🔥 USER RESUME CONTROLLER REACHED: " + userId
+        );
+        Long resumeId =
+                resumeService.getResumeByUserId(userId);
 
-        Long resume = resumeService.getResumeByUserId(userId);
+        if (resumeId == null) {
 
-        if (resume == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            return ResponseEntity.ok(
+                    new ResumeCheckResponse(
+                            false,
+                            null
+                    )
+            );
         }
 
-        return ResponseEntity.ok(resume);
-
-
-
+        return ResponseEntity.ok(
+                new ResumeCheckResponse(
+                        true,
+                        resumeId
+                )
+        );
     }
 
 
 
 
+    @GetMapping("/test-public")
+    public ResponseEntity<String> testPublic() {
 
+        return ResponseEntity.ok(
+                "RESUME SERVICE IS WORKING"
+        );
+    }
 
 }
 

@@ -39,14 +39,18 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // Allow OPTIONS preflight
                         .requestMatchers(
                                 HttpMethod.OPTIONS,
                                 "/**"
                         ).permitAll()
 
-                        // Auth service needs this endpoint
                         .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/resume/test-public"
+                        ).permitAll()
+
+                        .requestMatchers(
+                                HttpMethod.GET,
                                 "/api/v1/resume/user/**"
                         ).permitAll()
 

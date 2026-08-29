@@ -30,6 +30,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
+        System.out.println("=================================");
+        System.out.println("JWT shouldNotFilter CALLED");
+        System.out.println("URI: " + path);
+        System.out.println("SERVLET PATH: " + request.getServletPath());
+        System.out.println("CONTEXT PATH: " + request.getContextPath());
+        System.out.println("=================================");
+
         return path.equals("/api/v1/auth/login")
                 || path.equals("/api/v1/auth/register")
                 || path.startsWith("/oauth2/")
@@ -43,6 +50,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
+
+        System.out.println("=================================");
+        System.out.println("JWT FILTER ACTUALLY EXECUTING");
+        System.out.println("URI: " + request.getRequestURI());
+        System.out.println("AUTH HEADER: " + request.getHeader("Authorization"));
+        System.out.println("=================================");
 
         String authHeader =
                 request.getHeader("Authorization");

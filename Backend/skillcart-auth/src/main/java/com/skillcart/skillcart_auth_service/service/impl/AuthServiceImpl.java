@@ -1,9 +1,6 @@
 package com.skillcart.skillcart_auth_service.service.impl;
 
-import com.skillcart.skillcart_auth_service.dto.AuthResponse;
-import com.skillcart.skillcart_auth_service.dto.LoginRequest;
-import com.skillcart.skillcart_auth_service.dto.RegisterRequest;
-import com.skillcart.skillcart_auth_service.dto.ResumeCheckResponse;
+import com.skillcart.skillcart_auth_service.dto.*;
 import com.skillcart.skillcart_auth_service.entity.User;
 import com.skillcart.skillcart_auth_service.enums.Role;
 import com.skillcart.skillcart_auth_service.exception.EmailAlreadyExistsException;
@@ -151,12 +148,14 @@ public class AuthServiceImpl implements AuthService {
 
 
 
+
         return new AuthResponse(
                 token,
                 "Welcome Back: "
                         + user1.getUsername()
                         + " Login Successful" + "Resume Id is",
-                rid
+                        rid
+
         );
     }
 
@@ -167,17 +166,21 @@ public class AuthServiceImpl implements AuthService {
 
     private Long getResumeId(UUID userId) {
 
-        Long response =
+        ResumeResponse resumeResponse =
                 restClient.get()
                         .uri(
-                                "https://skillcart-resume.onrender.com/api/v1/resume/user/{userId}",
+                                "http://localhost:8082/api/v1/resume/user/{userId}",
                                 userId
                         )
                         .retrieve()
-                        .body(Long.class);
+                        .body(ResumeResponse.class);
 
+        if (resumeResponse == null ||
+                !Boolean.TRUE.equals(resumeResponse.getHasResume())) {
 
+            return null;
+        }
 
-        return response;
+        return resumeResponse.getResumeId();
     }
 }

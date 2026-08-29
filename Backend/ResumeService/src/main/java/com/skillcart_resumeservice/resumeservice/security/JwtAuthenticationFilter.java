@@ -21,6 +21,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
 
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
 
@@ -29,8 +30,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         boolean skip =
                 path.startsWith("/api/v1/resume/user/");
 
-        System.out.println("JWT FILTER PATH: " + path);
-        System.out.println("SKIPPING JWT FILTER: " + skip);
+        System.out.println("================================");
+        System.out.println("JWT FILTER CALLED");
+        System.out.println("METHOD: " + request.getMethod());
+        System.out.println("URI: " + request.getRequestURI());
+        System.out.println("SERVLET PATH: " + request.getServletPath());
+        System.out.println("SKIP JWT: " + skip);
+        System.out.println("================================");
 
         return skip;
     }
@@ -45,6 +51,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String authHeader =
                 request.getHeader("Authorization");
 
+
         if (authHeader == null ||
                 !authHeader.startsWith("Bearer ")) {
 
@@ -52,13 +59,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+
         try {
 
-            String token = authHeader.substring(7);
+            String token =
+                    authHeader.substring(7);
 
-            UUID userId = UUID.fromString(
-                    jwtService.extractUserId(token)
-            );
+
+            UUID userId =
+                    UUID.fromString(
+                            jwtService.extractUserId(token)
+                    );
+
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
@@ -67,11 +79,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             Collections.emptyList()
                     );
 
+
             SecurityContextHolder
                     .getContext()
-                    .setAuthentication(authentication);
+                    .setAuthentication(
+                            authentication
+                    );
 
         } catch (Exception e) {
+
+            System.out.println("================================");
+            System.out.println("JWT VALIDATION FAILED");
+            System.out.println("URI: " + request.getRequestURI());
+            System.out.println("ERROR: " + e.getMessage());
+            e.printStackTrace();
+            System.out.println("================================");
 
             SecurityContextHolder.clearContext();
 
@@ -82,6 +104,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        filterChain.doFilter(request, response);
+
+        filterChain.doFilter(
+                request,
+                response
+        );
     }
 }
