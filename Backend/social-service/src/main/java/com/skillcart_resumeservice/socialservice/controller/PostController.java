@@ -37,12 +37,11 @@ public class PostController {
             )
             MultipartFile image
     ) {
-
         UUID userId =
                 (UUID) authentication.getPrincipal();
 
-        String username = (String) authentication.getPrincipal();
-
+        String username =
+                (String) authentication.getDetails();
         return postService.createPost(
                 userId,
                 username,

@@ -1,6 +1,5 @@
 package com.skillcart_resumeservice.socialservice.security;
 
-import com.skillcart_resumeservice.socialservice.security.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,15 +29,21 @@ public class JwtAuthenticationFilter
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-
+        // Allow CORS preflight
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-            filterChain.doFilter(request, response);
+
+            filterChain.doFilter(
+                    request,
+                    response
+            );
+
             return;
         }
 
         String authHeader =
                 request.getHeader("Authorization");
 
+        // No token
         if (
                 authHeader == null ||
                         !authHeader.startsWith("Bearer ")
@@ -52,52 +57,64 @@ public class JwtAuthenticationFilter
             return;
         }
 
-        String token =
-                authHeader.substring(7);
+        try {
 
-        if (!jwtService.validateToken(token)) {
+            String token =
+                    authHeader.substring(7);
 
-            filterChain.doFilter(
-                    request,
-                    response
-            );
+            if (!jwtService.validateToken(token)) {
 
-            return;
-        }
+                SecurityContextHolder.clearContext();
 
-        String username =
-                jwtService.extractUsername(token);
+                filterChain.doFilter(
+                        request,
+                        response
+                );
 
-        String userId =
-                jwtService.extractUserId(token);
+                return;
+            }
 
-        if (
-                username != null &&
-                        userId != null &&
-                        SecurityContextHolder
-                                .getContext()
-                                .getAuthentication() == null
-        ) {
+            String username =
+                    jwtService.extractUsername(token);
 
-            UUID uuid =
-                    UUID.fromString(userId);
+            String userId =
+                    jwtService.extractUserId(token);
 
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            uuid,
-                            null,
-                            Collections.singletonList(
-                                    new SimpleGrantedAuthority(
-                                            "ROLE_USER"
-                                    )
-                            )
-                    );
+            if (
+                    username != null &&
+                            userId != null &&
+                            SecurityContextHolder
+                                    .getContext()
+                                    .getAuthentication() == null
+            ) {
 
-            SecurityContextHolder
-                    .getContext()
-                    .setAuthentication(
-                            authentication
-                    );
+                UUID uuid =
+                        UUID.fromString(userId);
+
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                uuid,
+                                null,
+                                Collections.singletonList(
+                                        new SimpleGrantedAuthority(
+                                                "ROLE_USER"
+                                        )
+                                )
+                        );
+
+                // Store username separately
+                authentication.setDetails(username);
+
+                SecurityContextHolder
+                        .getContext()
+                        .setAuthentication(
+                                authentication
+                        );
+            }
+
+        } catch (Exception e) {
+
+            SecurityContextHolder.clearContext();
         }
 
         filterChain.doFilter(
