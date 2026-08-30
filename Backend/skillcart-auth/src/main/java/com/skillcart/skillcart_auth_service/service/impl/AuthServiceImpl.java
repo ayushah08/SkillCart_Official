@@ -11,11 +11,11 @@ import com.skillcart.skillcart_auth_service.repository.UserRepository;
 import com.skillcart.skillcart_auth_service.security.JwtService;
 import com.skillcart.skillcart_auth_service.service.AuthService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -25,15 +25,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private JwtService jwtService;
-
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
     private final RestClient restClient;
 
 
@@ -44,21 +38,18 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse register(RegisterRequest registerRequest) {
 
-        // Check email
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
             throw new EmailAlreadyExistsException(
                     "User with email already exists"
             );
         }
 
-        // Check username
         if (userRepository.existsByUsername(registerRequest.getUsername())) {
             throw new UsernameAlreadyExistsException(
                     "Username already exists"
             );
         }
 
-        // Create User
         User user = User.builder()
                 .username(registerRequest.getUsername())
                 .email(registerRequest.getEmail())
@@ -73,19 +64,9 @@ public class AuthServiceImpl implements AuthService {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-        // Save User
         User savedUser = userRepository.save(user);
 
-        // Generate JWT
         String token = jwtService.generateJwtToken(savedUser);
-
-        /*
-         * Resume is NOT created during registration.
-         *
-         * Therefore rid = null.
-         *
-         * Frontend can use this to open the resume upload page.
-         */
 
         return new AuthResponse(
                 token,
@@ -102,60 +83,49 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse login(LoginRequest loginRequest) {
 
-        // Find user by email
-        Optional<User> user = userRepository.findByEmail(
-                loginRequest.getEmail()
-        );
+        User user = userRepository.findByEmail(
+                        loginRequest.getEmail()
+                )
+                .orElseThrow(() ->
+                        new EmailNotFoundException(
+                                loginRequest.getEmail()
+                                        + " Email Not Found"
+                        )
+                );
 
-        // Email doesn't exist
-        if (user.isEmpty()) {
-            throw new EmailNotFoundException(
-                    loginRequest.getEmail() + " Email Not Found"
-            );
-        }
 
-        User user1 = user.get();
-
-        // Check password
         if (!passwordEncoder.matches(
                 loginRequest.getPassword(),
-                user1.getPassword()
+                user.getPassword()
         )) {
             throw new IncorrectPasswordException(
                     "Password is incorrect"
             );
         }
 
+
         // Generate JWT
         String token = jwtService.generateJwtToken(
-                (UserDetails) user1
+                (UserDetails) user
         );
-        user1.setUpdatedAt(LocalDateTime.now());
-        Long rid = getResumeId(user1.getId());
-
-        userRepository.save(user1);
-
-        /*
-         * Ask Resume Service whether this user
-         * already has a resume.
-         *
-         * If resume exists:
-         *      rid = resume UUID
-         *
-         * If resume doesn't exist:
-         *      rid = null
-         */
 
 
+        // Update login time
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+
+        // Get Resume ID
+        // Login must NOT fail if Resume Service is unavailable
+        Long rid = getResumeId(user.getId());
 
 
         return new AuthResponse(
                 token,
                 "Welcome Back: "
-                        + user1.getUsername()
-                        + " Login Successful" + "Resume Id is",
-                        rid
-
+                        + user.getUsername()
+                        + " Login Successful",
+                rid
         );
     }
 
@@ -166,21 +136,41 @@ public class AuthServiceImpl implements AuthService {
 
     private Long getResumeId(UUID userId) {
 
-        ResumeResponse resumeResponse =
-                restClient.get()
-                        .uri(
-                                "https://skillcart-resume.onrender.com/api/v1/resume/user/{userId}",
-                                userId
-                        )
-                        .retrieve()
-                        .body(ResumeResponse.class);
+        try {
 
-        if (resumeResponse == null ||
-                !Boolean.TRUE.equals(resumeResponse.getHasResume())) {
+            ResumeResponse resumeResponse =
+                    restClient.get()
+                            .uri(
+                                    "https://skillcart-resume.onrender.com/api/v1/resume/user/{userId}",
+                                    userId
+                            )
+                            .retrieve()
+                            .body(ResumeResponse.class);
+
+
+            if (resumeResponse == null ||
+                    !Boolean.TRUE.equals(
+                            resumeResponse.getHasResume()
+                    )) {
+
+                return null;
+            }
+
+
+            return resumeResponse.getResumeId();
+
+        } catch (RestClientException e) {
+
+            /*
+             * Resume Service might be:
+             * - temporarily unavailable
+             * - waking up on Render
+             * - rate limiting (429)
+             *
+             * Login should still succeed.
+             */
 
             return null;
         }
-
-        return resumeResponse.getResumeId();
     }
 }
