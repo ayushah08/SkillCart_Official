@@ -24,7 +24,7 @@
     <!-- ============================= -->
 
     <groupId>com.skillcart</groupId>
-    <artifactId>job-service</artifactId>
+    <artifactId>job_service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
     <name>job-service</name>
