@@ -1,4 +1,4 @@
-package com.skillcart.job_service;
+package com.skillcart;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

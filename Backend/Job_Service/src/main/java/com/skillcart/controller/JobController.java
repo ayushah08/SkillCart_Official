@@ -1,5 +1,6 @@
 package com.skillcart.controller;
 
+import com.skillcart.service.JwtService;
 import com.skillcart.service.SaveJobService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -14,6 +15,7 @@ import java.util.UUID;
 public class JobController {
 
     private final SaveJobService saveJobService;
+    private final JwtService jwtService;
 
 
     // ===============================
