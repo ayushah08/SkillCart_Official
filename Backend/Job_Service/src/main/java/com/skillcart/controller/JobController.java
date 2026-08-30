@@ -15,7 +15,7 @@ import java.util.UUID;
 public class JobController {
 
     private final SaveJobService saveJobService;
-    private final JwtService jwtService;
+//    private final JwtService jwtService;
 
 
     // ===============================

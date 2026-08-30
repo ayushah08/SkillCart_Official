@@ -8,8 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.util.UUID;
 import java.util.function.Function;
-
 
 @Service
 public class JwtService {
@@ -17,7 +17,12 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String secret;
 
-    private SecretKey getSigningKey() {
+
+    // ==========================
+    // Signing Key
+    // ==========================
+
+    private SecretKey getSignInKey() {
 
         byte[] keyBytes =
                 Decoders.BASE64.decode(secret);
@@ -25,26 +30,35 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public Claims extractAllClaims(String token) {
 
-        return Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-    }
+    // ==========================
+    // Extract User ID
+    // ==========================
 
-    public <T> T extractClaim(
-            String token,
-            Function<Claims, T> resolver
+    public UUID extractUserId(
+            String token
     ) {
 
-        Claims claims = extractAllClaims(token);
+        String userId =
+                extractClaim(
+                        token,
+                        claims -> claims.get(
+                                "userId",
+                                String.class
+                        )
+                );
 
-        return resolver.apply(claims);
+        return UUID.fromString(userId);
     }
 
-    public String extractUsername(String token) {
+
+    // ==========================
+    // Extract Username
+    // ==========================
+
+    public String extractUsername(
+            String token
+    ) {
 
         return extractClaim(
                 token,
@@ -52,28 +66,59 @@ public class JwtService {
         );
     }
 
-    public String extractUserId(String token) {
+
+    // ==========================
+    // Extract Role
+    // ==========================
+
+    public String extractRole(
+            String token
+    ) {
 
         return extractClaim(
                 token,
                 claims -> claims.get(
-                        "userId",
+                        "role",
                         String.class
                 )
         );
     }
 
-    public boolean validateToken(String token) {
 
-        try {
+    // ==========================
+    // Generic Claim Extractor
+    // ==========================
 
-            extractAllClaims(token);
+    public <T> T extractClaim(
+            String token,
+            Function<Claims, T> claimsResolver
+    ) {
 
-            return true;
+        Claims claims =
+                extractAllClaims(token);
 
-        } catch (Exception e) {
+        return claimsResolver.apply(claims);
+    }
 
-            return false;
-        }
+
+    // ==========================
+    // Extract All Claims
+    // ==========================
+
+    private Claims extractAllClaims(
+            String token
+    ) {
+
+        return Jwts.parser()
+
+                .verifyWith(
+                        getSignInKey()
+                )
+
+                .build()
+
+                .parseSignedClaims(token)
+
+                .getPayload();
     }
 }
