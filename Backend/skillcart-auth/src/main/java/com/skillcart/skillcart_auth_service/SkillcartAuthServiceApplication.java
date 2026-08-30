@@ -4,7 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SkillcartAuthServiceApplication {
+public class
+SkillcartAuthServiceApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(SkillcartAuthServiceApplication.class, args);

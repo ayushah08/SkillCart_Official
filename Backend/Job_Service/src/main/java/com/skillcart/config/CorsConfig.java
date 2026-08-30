@@ -17,8 +17,8 @@ public class CorsConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(List.of(
-                "http://localhost:5173"
-//                "https://your-frontend.onrender.com"
+                "http://localhost:5173",
+                "https://skill-cart-m1eh.vercel.app/"
         ));
 
         configuration.setAllowedMethods(List.of(
