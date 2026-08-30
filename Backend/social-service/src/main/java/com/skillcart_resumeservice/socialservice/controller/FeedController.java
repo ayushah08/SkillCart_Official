@@ -42,7 +42,7 @@ public class FeedController {
     }
 
 
-    @GetMapping("/random")
+    @GetMapping
     public Page<PostResponse> getRandomPosts(
             Authentication authentication,
 
