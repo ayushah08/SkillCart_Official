@@ -36,6 +36,8 @@ public class PostLike {
     @Column(nullable = false)
     private UUID userId;
 
+    private String userName;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 

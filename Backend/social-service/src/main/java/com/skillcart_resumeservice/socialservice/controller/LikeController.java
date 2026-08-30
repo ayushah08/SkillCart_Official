@@ -23,9 +23,12 @@ public class LikeController {
         UUID userId =
                 (UUID) authentication.getPrincipal();
 
+        String userName = (String) authentication.getDetails();
+
         likeService.like(
                 postId,
-                userId
+                userId,
+                userName
         );
     }
 

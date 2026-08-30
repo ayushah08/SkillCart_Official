@@ -37,20 +37,20 @@ public class FeedService {
          *
          * Show other users' posts
          */
-        if (followingIds.isEmpty()) {
-
-            return postRepository
-                    .findByUserIdNotOrderByCreatedAtDesc(
-                            userId,
-                            pageable
-                    )
-                    .map(post ->
-                            postService.getPost(
-                                    post.getId(),
-                                    userId
-                            )
-                    );
-        }
+//        if (followingIds.isEmpty()) {
+//
+//            return postRepository
+//                    .findByUserIdNotOrderByCreatedAtDesc(
+//                            userId,
+//                            pageable
+//                    )
+//                    .map(post ->
+//                            postService.getPost(
+//                                    post.getId(),
+//                                    userId
+//                            )
+//                    );
+//        }
 
         /*
          * USER FOLLOWS PEOPLE

@@ -17,7 +17,8 @@ public class LikeService {
 
     public void like(
             UUID postId,
-            UUID userId
+            UUID userId,
+            String userName
     ) {
 
         if (!postRepository.existsById(postId)) {
@@ -42,6 +43,7 @@ public class LikeService {
                 PostLike.builder()
                         .postId(postId)
                         .userId(userId)
+                        .userName(userName)
                         .build()
         );
     }

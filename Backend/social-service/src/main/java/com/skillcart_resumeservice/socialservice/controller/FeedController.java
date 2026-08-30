@@ -17,7 +17,7 @@ public class FeedController {
 
     private final FeedService feedService;
 
-    @GetMapping
+    @GetMapping("/my")
     public Page<PostResponse> getFeed(
             Authentication authentication,
 
