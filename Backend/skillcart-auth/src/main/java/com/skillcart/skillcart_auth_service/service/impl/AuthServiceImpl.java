@@ -141,7 +141,7 @@ public class AuthServiceImpl implements AuthService {
             ResumeResponse resumeResponse =
                     restClient.get()
                             .uri(
-                                    "https://skillcart-resume.onrender.com/api/v1/resume/user/{userId}",
+                                    "http://localhost:8082/api/v1/resume/user/{userId}",
                                     userId
                             )
                             .retrieve()
@@ -153,22 +153,25 @@ public class AuthServiceImpl implements AuthService {
                             resumeResponse.getHasResume()
                     )) {
 
+                System.out.println("Resume Not Found");
+
                 return null;
             }
 
+
+            System.out.println(
+                    "Resume Id: "
+                            + resumeResponse.getResumeId()
+            );
 
             return resumeResponse.getResumeId();
 
         } catch (RestClientException e) {
 
-            /*
-             * Resume Service might be:
-             * - temporarily unavailable
-             * - waking up on Render
-             * - rate limiting (429)
-             *
-             * Login should still succeed.
-             */
+            System.out.println(
+                    "Could not fetch resume: "
+                            + e.getMessage()
+            );
 
             return null;
         }

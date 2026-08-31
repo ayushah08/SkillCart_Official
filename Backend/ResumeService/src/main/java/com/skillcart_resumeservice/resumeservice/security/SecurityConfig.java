@@ -26,16 +26,10 @@ public class SecurityConfig {
             HttpSecurity http
     ) throws Exception {
 
-        return http
+        http
                 .csrf(AbstractHttpConfigurer::disable)
 
                 .cors(cors -> {})
-
-                .httpBasic(AbstractHttpConfigurer::disable)
-
-                .formLogin(AbstractHttpConfigurer::disable)
-
-                .logout(AbstractHttpConfigurer::disable)
 
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
@@ -51,13 +45,13 @@ public class SecurityConfig {
                         ).permitAll()
 
                         .requestMatchers(
-                                "/",
-                                "/actuator/**"
+                                HttpMethod.GET,
+                                "/api/v1/resume/test-public"
                         ).permitAll()
 
                         .requestMatchers(
                                 HttpMethod.GET,
-                                "/api/v1/resume/test-public"
+                                "/api/v1/resume/user/**"
                         ).permitAll()
 
                         .anyRequest()
@@ -67,9 +61,9 @@ public class SecurityConfig {
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
-                )
+                );
 
-                .build();
+        return http.build();
     }
 
 
@@ -82,7 +76,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(
                 List.of(
                         "http://localhost:5173",
-                        "https://skill-cart-m1eh.vercel.app"
+                        "https://skill-cart-m1eh.vercel.app/"
                 )
         );
 
@@ -97,14 +91,20 @@ public class SecurityConfig {
         );
 
         configuration.setAllowedHeaders(
-                List.of("*")
+                List.of(
+                        "*"
+                )
         );
 
         configuration.setExposedHeaders(
-                List.of("*")
+                List.of(
+                        "*"
+                )
         );
 
-        configuration.setAllowCredentials(true);
+        configuration.setAllowCredentials(
+                true
+        );
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();

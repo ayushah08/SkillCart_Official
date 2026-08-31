@@ -64,9 +64,18 @@ public class ResumeService {
                 userId
         );
 
+
+        System.out.println("Reached Ai Service Calling");
         // Call AI service
         String aiParsedData =
-                aiResponse(resumeEntity);
+                null;
+        try {
+            aiParsedData = aiResponse(resumeEntity);
+            System.out.println("AI Parsed Data: " + aiParsedData);
+        } catch (Exception e) {
+            System.out.println("Error in Ai Service Calling");
+        }
+        System.out.println("Ai service called");
 
         // Update parsed JSON
         resumeEntity.setParsedJson(aiParsedData);

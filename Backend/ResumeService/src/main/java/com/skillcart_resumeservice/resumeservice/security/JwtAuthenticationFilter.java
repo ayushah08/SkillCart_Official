@@ -21,16 +21,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
 
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
 
-        String path = request.getServletPath();
+        String path = request.getRequestURI();
 
         boolean skip =
-                request.getMethod().equalsIgnoreCase("OPTIONS")
-                        || path.equals("/")
-                        || path.startsWith("/actuator/")
-                        || path.equals("/api/v1/resume/test-public");
+                path.startsWith("/api/v1/resume/user/");
 
         System.out.println("================================");
         System.out.println("JWT FILTER CALLED");
@@ -43,7 +41,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return skip;
     }
 
-
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -54,7 +51,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String authHeader =
                 request.getHeader("Authorization");
 
-        // No JWT present
+
         if (authHeader == null ||
                 !authHeader.startsWith("Bearer ")) {
 
@@ -62,15 +59,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+
         try {
 
             String token =
                     authHeader.substring(7);
 
+
             UUID userId =
                     UUID.fromString(
                             jwtService.extractUserId(token)
                     );
+
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
@@ -79,9 +79,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             Collections.emptyList()
                     );
 
+
             SecurityContextHolder
                     .getContext()
-                    .setAuthentication(authentication);
+                    .setAuthentication(
+                            authentication
+                    );
 
         } catch (Exception e) {
 
@@ -89,6 +92,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             System.out.println("JWT VALIDATION FAILED");
             System.out.println("URI: " + request.getRequestURI());
             System.out.println("ERROR: " + e.getMessage());
+            e.printStackTrace();
             System.out.println("================================");
 
             SecurityContextHolder.clearContext();
@@ -99,6 +103,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             return;
         }
+
 
         filterChain.doFilter(
                 request,

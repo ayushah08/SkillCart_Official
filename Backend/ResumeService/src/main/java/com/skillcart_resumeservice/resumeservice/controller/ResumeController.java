@@ -136,14 +136,18 @@ public class ResumeController {
 
         if (resumeId == null) {
 
+            System.out.println("resumeId is null");
+
             return ResponseEntity.ok(
                     new ResumeCheckResponse(
                             false,
                             null
                     )
+
             );
         }
 
+        System.out.println("resumeId is " + resumeId);
         return ResponseEntity.ok(
                 new ResumeCheckResponse(
                         true,
