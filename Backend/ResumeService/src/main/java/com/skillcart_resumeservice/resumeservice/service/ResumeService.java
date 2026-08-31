@@ -1,6 +1,5 @@
 package com.skillcart_resumeservice.resumeservice.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skillcart_resumeservice.resumeservice.entity.ResumeEntity;
 import com.skillcart_resumeservice.resumeservice.repository.ResumeRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,6 @@ public class ResumeService {
 
     private final RestClient restClient;
     private final ResumeRepository resumeRepository;
-    private final ObjectMapper objectMapper;
 
     private final Logger logger =
             LoggerFactory.getLogger(ResumeService.class);
@@ -46,15 +44,17 @@ public class ResumeService {
         ResumeEntity resumeEntity =
                 new ResumeEntity();
 
-        // IMPORTANT: Connect resume to logged-in user
         resumeEntity.setUserId(userId);
-
         resumeEntity.setFileName(fileName);
         resumeEntity.setFileType(fileType);
         resumeEntity.setFileData(file.getBytes());
         resumeEntity.setParsedJson(null);
 
-        // Save resume and generate RID
+
+        // ==============================
+        // SAVE RESUME
+        // ==============================
+
         resumeEntity =
                 resumeRepository.save(resumeEntity);
 
@@ -65,14 +65,47 @@ public class ResumeService {
         );
 
 
-        System.out.println("Reached Ai Service Calling");
-        // Call AI service
-        String aiParsedData =
-                aiResponse(resumeEntity);
-        System.out.println("Ai service called");
+        // ==============================
+        // CALL AI SERVICE
+        // ==============================
 
-        // Update parsed JSON
-        resumeEntity.setParsedJson(aiParsedData);
+        try {
+
+            logger.info(
+                    "Calling AI service for RID: {}",
+                    resumeEntity.getId()
+            );
+
+            String aiParsedData =
+                    aiResponse(resumeEntity);
+
+            if (aiParsedData != null) {
+
+                resumeEntity.setParsedJson(
+                        aiParsedData
+                );
+
+                resumeRepository.save(
+                        resumeEntity
+                );
+
+                logger.info(
+                        "AI parsed data saved for RID: {}",
+                        resumeEntity.getId()
+                );
+
+            }
+
+        } catch (Exception e) {
+
+            logger.error(
+                    "AI service failed for RID: {}. Resume was still uploaded.",
+                    resumeEntity.getId(),
+                    e
+            );
+
+        }
+
 
         return resumeEntity.getId();
     }
@@ -102,29 +135,9 @@ public class ResumeService {
             UUID userId
     ) {
 
-        logger.info(
-                "Searching resume ID for UID: {}",
-                userId
-        );
-
         Long resumeId =
                 resumeRepository
                         .findResumeIdByUserId(userId);
-
-        if (resumeId == null) {
-
-            logger.info(
-                    "No resume found for UID: {}",
-                    userId
-            );
-
-            return null;
-        }
-
-        logger.info(
-                "Resume found. RID: {}",
-                resumeId
-        );
 
         return resumeId;
     }
