@@ -141,11 +141,12 @@ public class AuthServiceImpl implements AuthService {
             ResumeResponse resumeResponse =
                     restClient.get()
                             .uri(
-                                    "http://localhost:8082/api/v1/resume/user/{userId}",
+                                    "https://skillcart-resume.onrender.com/api/v1/resume/user/{userId}",
                                     userId
                             )
                             .retrieve()
                             .body(ResumeResponse.class);
+
 
 
             if (resumeResponse == null ||
