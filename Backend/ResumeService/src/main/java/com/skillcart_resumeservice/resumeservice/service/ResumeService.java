@@ -81,7 +81,7 @@ public class ResumeService {
 
         return restClient.post()
                 .uri(
-                        "https://skillcart-ai.onrender.com/api/v1/resume/parse"
+                        "https://skillcart-ai.fastapicloud.dev/api/v1/resume/parse"
                 )
                 .contentType(
                         MediaType.APPLICATION_JSON
