@@ -41,6 +41,10 @@ public class ResumeService {
                 )
                         : "";
 
+        // ==============================
+        // CREATE RESUME OBJECT
+        // ==============================
+
         ResumeEntity resumeEntity =
                 new ResumeEntity();
 
@@ -48,68 +52,67 @@ public class ResumeService {
         resumeEntity.setFileName(fileName);
         resumeEntity.setFileType(fileType);
         resumeEntity.setFileData(file.getBytes());
-        resumeEntity.setParsedJson(null);
 
 
         // ==============================
-        // SAVE RESUME
+        // CALL AI SERVICE FIRST
+        // ==============================
+
+        logger.info(
+                "Calling AI service for UID: {}",
+                userId
+        );
+
+        String aiParsedData =
+                aiResponse(resumeEntity);
+
+
+        // ==============================
+        // VALIDATE AI RESPONSE
+        // ==============================
+
+        if (aiParsedData == null ||
+                aiParsedData.isBlank()) {
+
+            throw new RuntimeException(
+                    "AI service did not return parsed resume data"
+            );
+        }
+
+
+        // ==============================
+        // SET PARSED JSON
+        // ==============================
+
+        resumeEntity.setParsedJson(
+                aiParsedData
+        );
+
+
+        // ==============================
+        // SAVE ONLY AFTER AI SUCCESS
         // ==============================
 
         resumeEntity =
-                resumeRepository.save(resumeEntity);
+                resumeRepository.save(
+                        resumeEntity
+                );
+
 
         logger.info(
-                "Resume saved. RID: {}, UID: {}",
+                "Resume and AI data saved. RID: {}, UID: {}",
                 resumeEntity.getId(),
                 userId
         );
 
 
-        // ==============================
-        // CALL AI SERVICE
-        // ==============================
-
-        try {
-
-            logger.info(
-                    "Calling AI service for RID: {}",
-                    resumeEntity.getId()
-            );
-
-            String aiParsedData =
-                    aiResponse(resumeEntity);
-
-            if (aiParsedData != null) {
-
-                resumeEntity.setParsedJson(
-                        aiParsedData
-                );
-
-                resumeRepository.save(
-                        resumeEntity
-                );
-
-                logger.info(
-                        "AI parsed data saved for RID: {}",
-                        resumeEntity.getId()
-                );
-
-            }
-
-        } catch (Exception e) {
-
-            logger.error(
-                    "AI service failed for RID: {}. Resume was still uploaded.",
-                    resumeEntity.getId(),
-                    e
-            );
-
-        }
-
-
         return resumeEntity.getId();
     }
 
+
+    // ==============================
+    // AI SERVICE
+    // ==============================
 
     public String aiResponse(
             ResumeEntity resumeEntity
@@ -117,7 +120,7 @@ public class ResumeService {
 
         return restClient.post()
                 .uri(
-                        "https://skillcart-ai.fastapicloud.dev/api/v1/resume/parse"
+                        "https://skillcart-ai.onrender.com/api/v1/resume/parse"
                 )
                 .contentType(
                         MediaType.APPLICATION_JSON
@@ -130,15 +133,16 @@ public class ResumeService {
     }
 
 
+    // ==============================
+    // GET RESUME ID BY USER
+    // ==============================
+
     @Transactional(readOnly = true)
     public Long getResumeByUserId(
             UUID userId
     ) {
 
-        Long resumeId =
-                resumeRepository
-                        .findResumeIdByUserId(userId);
-
-        return resumeId;
+        return resumeRepository
+                .findResumeIdByUserId(userId);
     }
 }
