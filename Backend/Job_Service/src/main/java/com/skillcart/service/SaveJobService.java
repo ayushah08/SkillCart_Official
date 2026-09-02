@@ -4,6 +4,7 @@ import com.skillcart.entity.SavedJobs;
 import com.skillcart.repository.JobRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -43,6 +44,7 @@ public class SaveJobService {
     }
 
 
+    @Transactional
     public String unsaveJob(
             Long jobId,
             UUID userId
