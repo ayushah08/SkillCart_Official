@@ -13,7 +13,6 @@ public interface PostLikeRepository
             UUID userId
     );
 
-
     void deleteByPostIdAndUserId(
             UUID postId,
             UUID userId
