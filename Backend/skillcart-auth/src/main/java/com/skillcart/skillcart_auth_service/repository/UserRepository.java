@@ -1,6 +1,5 @@
 package com.skillcart.skillcart_auth_service.repository;
 
-import com.skillcart.skillcart_auth_service.dto.UserProfileResponse;
 import com.skillcart.skillcart_auth_service.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -17,6 +16,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByUsername(String username);
 
-    UserProfileResponse getUserProfile(UUID userId);
+//    UserProfileResponse getUserProfile(UUID userId);
 }
 
