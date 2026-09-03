@@ -13,7 +13,6 @@ public interface PostLikeRepository
             UUID userId
     );
 
-    User getUserByUsername(String username);
 
     void deleteByPostIdAndUserId(
             UUID postId,
