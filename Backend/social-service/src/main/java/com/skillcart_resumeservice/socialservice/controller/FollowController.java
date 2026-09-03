@@ -1,5 +1,6 @@
 package com.skillcart_resumeservice.socialservice.controller;
 
+import com.skillcart_resumeservice.socialservice.dto.UserSummaryResponse;
 import com.skillcart_resumeservice.socialservice.service.FollowService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -81,23 +82,33 @@ public class FollowController {
 
 
     @GetMapping("/{userId}/followers")
-    public List<UUID> getFollowers(
+    public List<UserSummaryResponse> getFollowers(
+            Authentication authentication,
             @PathVariable UUID userId
     ) {
 
+        UUID currentUserId =
+                (UUID) authentication.getPrincipal();
+
         return followService.getFollowers(
-                userId
+                userId,
+                currentUserId
         );
     }
 
 
     @GetMapping("/{userId}/following")
-    public List<UUID> getFollowing(
+    public List<UserSummaryResponse> getFollowing(
+            Authentication authentication,
             @PathVariable UUID userId
     ) {
 
+        UUID currentUserId =
+                (UUID) authentication.getPrincipal();
+
         return followService.getFollowing(
-                userId
+                userId,
+                currentUserId
         );
     }
 

@@ -65,4 +65,4 @@ public class FeedController {
                 PageRequest.of(page, size)
         );
     }
-}
+}   

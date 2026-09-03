@@ -44,7 +44,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(
                 List.of(
                         "http://localhost:5173",
-                        "https://skill-cart-m1eh.vercel.app/"
+                        "https://skill-cart-m1eh.vercel.app"
 
                 )
         );
@@ -108,6 +108,9 @@ public class SecurityConfig {
                                 "/api/v1/auth/login"
                         ).permitAll()
 
+                        .requestMatchers(
+                                "/api/v1/auth/users/**"
+                        ).permitAll()
                         .requestMatchers(
                                 "/oauth2/**",
                                 "/login/oauth2/**"

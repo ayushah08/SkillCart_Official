@@ -3,10 +3,14 @@ package com.skillcart.skillcart_auth_service.controller;
 import com.skillcart.skillcart_auth_service.dto.AuthResponse;
 import com.skillcart.skillcart_auth_service.dto.LoginRequest;
 import com.skillcart.skillcart_auth_service.dto.RegisterRequest;
+import com.skillcart.skillcart_auth_service.dto.UserProfileResponse;
 import com.skillcart.skillcart_auth_service.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -14,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 public class AuthController {
 
-    private AuthService authService;
+    private final AuthService authService;
 
     @PostMapping("/register")
     public AuthResponse register(@Valid @RequestBody RegisterRequest registerRequest) {
@@ -39,6 +43,13 @@ public class AuthController {
         return authService.login(loginRequest);
     }
 
+    @GetMapping("/users/{userId}")
+    public UserProfileResponse getUserProfile(
+            @PathVariable UUID userId
+    ) {
+
+        return authService.getUserProfile(userId);
+    }
 
 
 

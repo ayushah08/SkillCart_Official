@@ -18,7 +18,6 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -176,5 +175,21 @@ public class AuthServiceImpl implements AuthService {
 
             return null;
         }
+    }
+    @Override
+    public UserProfileResponse getUserProfile(UUID userId) {
+
+        User user = userRepository
+                .findById(userId)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "User not found"
+                        )
+                );
+
+        return UserProfileResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .build();
     }
 }
