@@ -32,4 +32,23 @@ public class AuthUserClient {
 
         return user;
     }
+
+    public AuthUserResponse getUserByName(String username) {
+
+        AuthUserResponse user =
+                restClient.get()
+                        .uri(
+                                "https://skillcart-auth.onrender.com/api/v1/auth/users/{username}",
+                                username
+                        )
+                        .accept(MediaType.APPLICATION_JSON)
+                        .retrieve()
+                        .body(AuthUserResponse.class);
+
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
+
+        return user;
+    }
 }

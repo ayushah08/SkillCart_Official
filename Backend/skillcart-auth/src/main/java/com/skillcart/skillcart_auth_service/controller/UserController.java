@@ -73,4 +73,21 @@ public class UserController {
                 .email(user.getEmail())
                 .build();
     }
+
+    @GetMapping("/{username}")
+    public UserResponse getUserByUsername(
+            @PathVariable String username
+    ) {
+
+        User user =
+                userRepository
+                        .findByUsername(username)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "User not found"
+                                )
+                        );
+
+        return mapToResponse(user);
+    }
 }

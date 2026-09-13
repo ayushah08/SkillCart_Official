@@ -33,4 +33,16 @@ public class ProfileController {
                 currentUserId
         );
     }
+    @GetMapping("/{username}")
+    public UserProfileResponse searchProfile(
+            Authentication authentication,
+            @PathVariable String username
+    ){
+
+        UUID currentUserId =
+                (UUID) authentication.getPrincipal();
+        return profileService.searchUserProfile(username , currentUserId);
+
+
+    }
 }

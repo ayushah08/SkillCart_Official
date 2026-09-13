@@ -79,4 +79,66 @@ public class ProfileService {
                 .followingByMe(followingByMe)
                 .build();
     }
+    public UserProfileResponse searchUserProfile(
+            String username,
+            UUID currentUserId
+    ) {
+
+        // ==============================
+        // GET USER FROM AUTH SERVICE
+        // ==============================
+
+        AuthUserResponse authUser =
+                authUserClient.getUserByName(
+                        username
+                );
+
+
+        // ==============================
+        // SOCIAL COUNTS
+        // ==============================
+
+        long postsCount =
+                postRepository.countByUserId(
+                        authUser.getId()
+                );
+
+        long followersCount =
+                followRepository.countByFollowingId(
+                        authUser.getId()
+                );
+
+        long followingCount =
+                followRepository.countByFollowerId(
+                        authUser.getId()
+                );
+
+
+        // ==============================
+        // FOLLOW STATUS
+        // ==============================
+
+        boolean followingByMe =
+                !authUser.getId().equals(currentUserId)
+                        && followRepository
+                        .existsByFollowerIdAndFollowingId(
+                                currentUserId,
+                                authUser.getId()
+                        );
+
+
+        // ==============================
+        // RESPONSE
+        // ==============================
+
+        return UserProfileResponse.builder()
+                .userId(authUser.getId())
+                .username(authUser.getUsername())
+                .postsCount(postsCount)
+                .followersCount(followersCount)
+                .followingCount(followingCount)
+                .followingByMe(followingByMe)
+                .build();
+    }
 }
+
