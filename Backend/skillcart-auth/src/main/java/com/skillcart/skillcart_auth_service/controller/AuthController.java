@@ -1,45 +1,61 @@
 package com.skillcart.skillcart_auth_service.controller;
 
 import com.skillcart.skillcart_auth_service.dto.AuthResponse;
+import com.skillcart.skillcart_auth_service.dto.EmailOtpRequest;
 import com.skillcart.skillcart_auth_service.dto.LoginRequest;
 import com.skillcart.skillcart_auth_service.dto.RegisterRequest;
 import com.skillcart.skillcart_auth_service.dto.UserProfileResponse;
+import com.skillcart.skillcart_auth_service.dto.VerifyOtpRequest;
 import com.skillcart.skillcart_auth_service.service.AuthService;
-import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/auth")
-@CrossOrigin(origins = "http://localhost:5173")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
 
+    @PostMapping("/send/otp")
+    public Map<String, Object> sendOtp(
+            @Valid @RequestBody EmailOtpRequest request
+    ) {
+        authService.sendEmailOtp(request.email());
+
+        return Map.of(
+                "success", true,
+                "message", "OTP sent successfully. Please check your email."
+        );
+    }
+
+    @PostMapping("/verify-otp")
+    public boolean verifyOtp(
+            @Valid @RequestBody VerifyOtpRequest request
+    ) {
+        return authService.verifyEmailOtp(
+                request.email(),
+                request.otp()
+        );
+    }
+
     @PostMapping("/register")
-    public AuthResponse register(@Valid @RequestBody RegisterRequest registerRequest) {
-
-        //   {
-//            "username":"ayush",
-//            "email":"ayushah@gmail.com",
-//            "password":"password123"
-//            }
-
+    public AuthResponse register(
+            @Valid @RequestBody RegisterRequest registerRequest
+    ) {
         return authService.register(registerRequest);
     }
 
     @PostMapping("/login")
-    public AuthResponse login(@Valid @RequestBody LoginRequest loginRequest) {
-
-
-        System.out.println("================================");
-        System.out.println("LOGIN CONTROLLER HIT");
-        System.out.println("EMAIL: " + loginRequest.getEmail());
-        System.out.println("================================");
+    public AuthResponse login(
+            @Valid @RequestBody LoginRequest loginRequest
+    ) {
         return authService.login(loginRequest);
     }
 
@@ -47,11 +63,6 @@ public class AuthController {
     public UserProfileResponse getUserProfile(
             @PathVariable UUID userId
     ) {
-
         return authService.getUserProfile(userId);
     }
-
-
-
-
 }
