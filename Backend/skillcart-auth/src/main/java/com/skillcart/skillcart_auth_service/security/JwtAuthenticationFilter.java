@@ -23,26 +23,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final CustomUserDetailsService customUserDetailsService;
 
-    @Override
-    protected boolean shouldNotFilter(
-            HttpServletRequest request
-    ) {
+@Override
+protected boolean shouldNotFilter(
+        HttpServletRequest request
+) {
+    String path = request.getServletPath();
 
-        String path = request.getServletPath();
-
-        System.out.println("=================================");
-        System.out.println("JWT shouldNotFilter CALLED");
-        System.out.println("URI: " + path);
-        System.out.println("SERVLET PATH: " + request.getServletPath());
-        System.out.println("CONTEXT PATH: " + request.getContextPath());
-        System.out.println("=================================");
-
-        return path.equals("/api/v1/auth/login")
-                || path.equals("/api/v1/auth/register")
-                || path.startsWith("/oauth2/")
-                || path.startsWith("/login/oauth2/")
-                || path.equals("/actuator/health");
-    }
+    return path.equals("/api/v1/auth/login")
+            || path.equals("/api/v1/auth/register")
+            || path.equals("/api/v1/auth/send/otp")
+            || path.equals("/api/v1/auth/verify-otp")
+            || path.startsWith("/oauth2/")
+            || path.startsWith("/login/oauth2/")
+            || path.equals("/actuator/health");
+}
 
     @Override
     protected void doFilterInternal(
