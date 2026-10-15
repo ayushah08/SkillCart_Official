@@ -1,4 +1,3 @@
-```java
 package com.skillcart.skillcart_auth_service.config;
 
 import org.springframework.context.annotation.Bean;
