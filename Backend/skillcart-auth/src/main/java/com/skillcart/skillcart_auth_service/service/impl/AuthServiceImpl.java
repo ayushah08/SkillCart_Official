@@ -1,3 +1,4 @@
+
 package com.skillcart.skillcart_auth_service.service.impl;
 
 import com.skillcart.skillcart_auth_service.dto.*;
@@ -10,7 +11,9 @@ import com.skillcart.skillcart_auth_service.exception.UsernameAlreadyExistsExcep
 import com.skillcart.skillcart_auth_service.repository.UserRepository;
 import com.skillcart.skillcart_auth_service.security.JwtService;
 import com.skillcart.skillcart_auth_service.service.AuthService;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,52 +31,71 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final RestClient restClient;
-
+    private final GmailServices gmailServices;
 
     // =========================================================
     // REGISTER
+    // Account creation is allowed only after email verification.
     // =========================================================
 
     @Override
     public AuthResponse register(RegisterRequest registerRequest) {
 
-        if (userRepository.existsByEmail(registerRequest.getEmail())) {
+        String email = registerRequest.getEmail()
+                .trim()
+                .toLowerCase(java.util.Locale.ROOT);
+
+        // Check whether the email is already registered.
+        if (userRepository.existsByEmail(email)) {
             throw new EmailAlreadyExistsException(
                     "User with email already exists"
             );
         }
 
-        if (userRepository.existsByUsername(registerRequest.getUsername())) {
+        // Check whether the username is already registered.
+        if (userRepository.existsByUsername(
+                registerRequest.getUsername()
+        )) {
             throw new UsernameAlreadyExistsException(
                     "Username already exists"
             );
         }
 
+        // Require a successful OTP verification before creating
+        // the account. Verification expires after 10 minutes.
+        if (!gmailServices.consumeEmailVerification(email)) {
+            throw new IllegalStateException(
+                    "Please verify your email before creating an account"
+            );
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
         User user = User.builder()
                 .username(registerRequest.getUsername())
-                .email(registerRequest.getEmail())
+                .email(email)
                 .password(
                         passwordEncoder.encode(
                                 registerRequest.getPassword()
                         )
                 )
                 .role(Role.USER)
-                .verified(false)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .verified(true)
+                .createdAt(now)
+                .updatedAt(now)
                 .build();
 
         User savedUser = userRepository.save(user);
 
-        String token = jwtService.generateJwtToken(savedUser);
+        // Do not issue a JWT during registration.
+        // The user can log in after the account is created.
 
         return new AuthResponse(
-                token,
-                "User Registered Successfully",
+                null,
+                "Account created successfully. Please log in.",
                 null
         );
     }
-
 
     // =========================================================
     // LOGIN
@@ -92,7 +114,6 @@ public class AuthServiceImpl implements AuthService {
                         )
                 );
 
-
         if (!passwordEncoder.matches(
                 loginRequest.getPassword(),
                 user.getPassword()
@@ -102,32 +123,31 @@ public class AuthServiceImpl implements AuthService {
             );
         }
 
+        // Never issue a JWT to an unverified user.
+        if (!user.isVerified()) {
+            throw new IllegalStateException(
+                    "Please verify your email before logging in"
+            );
+        }
 
-        // Generate JWT
         String token = jwtService.generateJwtToken(
                 (UserDetails) user
         );
 
-
-        // Update login time
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
 
-
-        // Get Resume ID
-        // Login must NOT fail if Resume Service is unavailable
-        Long rid = getResumeId(user.getId());
-
+        // Resume service failure must not prevent login.
+        Long resumeId = getResumeId(user.getId());
 
         return new AuthResponse(
                 token,
                 "Welcome Back: "
                         + user.getUsername()
                         + " Login Successful",
-                rid
+                resumeId
         );
     }
-
 
     // =========================================================
     // GET RESUME ID FROM RESUME SERVICE
@@ -137,59 +157,86 @@ public class AuthServiceImpl implements AuthService {
 
         try {
 
-            ResumeResponse resumeResponse =
-                    restClient.get()
-                            .uri(
-                                    "https://skillcart-resume.onrender.com/api/v1/resume/user/{userId}",
-                                    userId
-                            )
-                            .retrieve()
-                            .body(ResumeResponse.class);
+            ResumeResponse resumeResponse = restClient.get()
+                    .uri(
+                            "https://skillcart-resume.onrender.com/api/v1/resume/user/{userId}",
+                            userId
+                    )
+                    .retrieve()
+                    .body(ResumeResponse.class);
 
-
-
-            if (resumeResponse == null ||
-                    !Boolean.TRUE.equals(
-                            resumeResponse.getHasResume()
-                    )) {
-
-                System.out.println("Resume Not Found");
-
+            if (resumeResponse == null
+                    || !Boolean.TRUE.equals(
+                    resumeResponse.getHasResume()
+            )) {
                 return null;
             }
-
-
-            System.out.println(
-                    "Resume Id: "
-                            + resumeResponse.getResumeId()
-            );
 
             return resumeResponse.getResumeId();
 
         } catch (RestClientException e) {
 
-            System.out.println(
-                    "Could not fetch resume: "
-                            + e.getMessage()
+            System.err.println(
+                    "Could not fetch resume: " + e.getMessage()
             );
 
             return null;
         }
     }
+
+    // =========================================================
+    // GET USER PROFILE
+    // =========================================================
+
     @Override
     public UserProfileResponse getUserProfile(UUID userId) {
 
-        User user = userRepository
-                .findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() ->
-                        new RuntimeException(
-                                "User not found"
-                        )
+                        new RuntimeException("User not found")
                 );
 
         return UserProfileResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
                 .build();
+    }
+
+    // =========================================================
+    // SEND EMAIL OTP
+    // Does not create a user.
+    // =========================================================
+
+    @Override
+    public void sendEmailOtp(String email) {
+
+        String normalizedEmail = email.trim()
+                .toLowerCase(java.util.Locale.ROOT);
+
+        if (userRepository.existsByEmail(normalizedEmail)) {
+            throw new EmailAlreadyExistsException(
+                    "An account with this email already exists"
+            );
+        }
+
+        gmailServices.sendOtpToAdmin(normalizedEmail);
+    }
+
+    // =========================================================
+    // VERIFY EMAIL OTP
+    // Does not create a user.
+    // =========================================================
+
+    @Override
+    public boolean verifyEmailOtp(String email, String otp) {
+
+        String normalizedEmail = email.trim()
+                .toLowerCase(java.util.Locale.ROOT);
+
+        if (userRepository.existsByEmail(normalizedEmail)) {
+            return false;
+        }
+
+        return gmailServices.validateOtp(normalizedEmail, otp);
     }
 }
