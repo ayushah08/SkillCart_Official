@@ -1,7 +1,10 @@
+
 package com.skillcart.skillcart_auth_service.config;
 
 import com.skillcart.skillcart_auth_service.security.JwtAuthenticationFilter;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -14,8 +17,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
@@ -26,26 +29,28 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
+    // =========================================================
+    // PASSWORD ENCODER
+    // =========================================================
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // ============================================================
+    // =========================================================
     // CORS CONFIGURATION
-    // ============================================================
+    // =========================================================
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
-        CorsConfiguration configuration =
-                new CorsConfiguration();
+        CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(
                 List.of(
                         "http://localhost:5173",
                         "https://skill-cart-m1eh.vercel.app"
-
                 )
         );
 
@@ -54,6 +59,7 @@ public class SecurityConfig {
                         "GET",
                         "POST",
                         "PUT",
+                        "PATCH",
                         "DELETE",
                         "OPTIONS"
                 )
@@ -64,9 +70,7 @@ public class SecurityConfig {
         );
 
         configuration.setExposedHeaders(
-                List.of(
-                        "Authorization"
-                )
+                List.of("Authorization")
         );
 
         configuration.setAllowCredentials(true);
@@ -74,13 +78,14 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
 
-        source.registerCorsConfiguration(
-                "/**",
-                configuration
-        );
+        source.registerCorsConfiguration("/**", configuration);
 
         return source;
     }
+
+    // =========================================================
+    // SECURITY FILTER CHAIN
+    // =========================================================
 
     @Bean
     public SecurityFilterChain securityFilterChain(
@@ -90,7 +95,6 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
 
-                // USE THE CORS CONFIG ABOVE
                 .cors(cors -> cors.configurationSource(
                         corsConfigurationSource()
                 ))
@@ -103,25 +107,27 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
+                        // Registration and email verification
                         .requestMatchers(
                                 "/api/v1/auth/register",
-                                "/api/v1/auth/login"
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/send/otp",
+                                "/api/v1/auth/verify-otp"
                         ).permitAll()
 
-                        .requestMatchers(
-                                "/api/v1/auth/users/**"
-                        ).permitAll()
+                        // OAuth2 login flow
                         .requestMatchers(
                                 "/oauth2/**",
                                 "/login/oauth2/**"
                         ).permitAll()
 
+                        // Health check
                         .requestMatchers(
                                 "/actuator/health"
                         ).permitAll()
 
-                        .anyRequest()
-                        .authenticated()
+                        // All other endpoints require authentication
+                        .anyRequest().authenticated()
                 )
 
                 .exceptionHandling(exception ->
