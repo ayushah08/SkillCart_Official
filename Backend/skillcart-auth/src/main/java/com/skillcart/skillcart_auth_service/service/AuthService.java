@@ -5,7 +5,6 @@ import com.skillcart.skillcart_auth_service.dto.AuthResponse;
 import com.skillcart.skillcart_auth_service.dto.LoginRequest;
 import com.skillcart.skillcart_auth_service.dto.RegisterRequest;
 import com.skillcart.skillcart_auth_service.dto.UserProfileResponse;
-import com.skillcart.skillcart_auth_service.entity.User;
 
 import java.util.UUID;
 
@@ -19,4 +18,8 @@ public interface AuthService {
 //    UserProfileResponse getUserProfile(String username);
 
     UserProfileResponse getUserProfile(UUID userId);
+
+    void sendEmailOtp(String email);
+
+    boolean verifyEmailOtp(String email, String otp);
 }
