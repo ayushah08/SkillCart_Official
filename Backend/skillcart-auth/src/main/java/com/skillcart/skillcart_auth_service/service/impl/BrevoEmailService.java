@@ -1,4 +1,3 @@
-
 package com.skillcart.skillcart_auth_service.service.impl;
 
 import java.util.List;
@@ -7,6 +6,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 
@@ -27,7 +27,10 @@ public class BrevoEmailService {
         this.restClient = restClientBuilder
                 .baseUrl(apiUrl)
                 .defaultHeader("api-key", apiKey)
-                .defaultHeader("Accept", MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader(
+                        "Accept",
+                        MediaType.APPLICATION_JSON_VALUE
+                )
                 .build();
 
         this.senderEmail = senderEmail;
@@ -36,32 +39,32 @@ public class BrevoEmailService {
 
     public void sendOtpEmail(String recipientEmail, String otp) {
 
-        String subject = "Your SkillCart verification code";
+        String subject = "SkillCart - Email Verification OTP";
 
         String textContent = """
-                Hello,
+                Welcome to SkillCart!
 
-                Your SkillCart email verification code is: %s
+                Your email verification OTP is: %s
 
-                This code expires in 3 minutes.
-                If you did not request this code, you can ignore this email.
+                This OTP expires in 3 minutes.
+                Do not share this OTP with anyone.
 
-                Team SkillCart
+                If you did not request this OTP, please ignore this email.
                 """.formatted(otp);
 
         String htmlContent = """
                 <!DOCTYPE html>
                 <html>
-                  <body style="font-family:Arial,sans-serif;color:#222;">
-                    <h2>Verify your SkillCart email</h2>
-                    <p>Use the verification code below to continue:</p>
-                    <p style="font-size:30px;font-weight:bold;letter-spacing:6px;">
-                      %s
-                    </p>
-                    <p>This code expires in <strong>3 minutes</strong>.</p>
-                    <p>If you did not request this code, ignore this email.</p>
+                <body style="font-family:Arial,sans-serif;color:#222;">
+                    <h2>Welcome to SkillCart!</h2>
+                    <p>Your email verification OTP is:</p>
+                    <p style="font-size:30px;font-weight:bold;
+                              letter-spacing:6px;">%s</p>
+                    <p>This OTP expires in <strong>3 minutes</strong>.</p>
+                    <p>Do not share this OTP with anyone.</p>
+                    <p>If you did not request this OTP, ignore this email.</p>
                     <p>Team SkillCart</p>
-                  </body>
+                </body>
                 </html>
                 """.formatted(otp);
 
@@ -86,13 +89,14 @@ public class BrevoEmailService {
                     .toBodilessEntity();
 
         } catch (RestClientResponseException ex) {
-            // Never log the API key or the OTP.
+            // Avoid logging the API key or the OTP.
             throw new IllegalStateException(
                     "Brevo rejected the email request. HTTP status: "
                             + ex.getStatusCode().value(),
                     ex
             );
-        } catch (org.springframework.web.client.ResourceAccessException ex) {
+
+        } catch (ResourceAccessException ex) {
             throw new IllegalStateException(
                     "Could not connect to the Brevo email API.",
                     ex
