@@ -1,3 +1,4 @@
+
 package com.skillcart.skillcart_auth_service.config;
 
 import org.springframework.context.annotation.Bean;
@@ -10,5 +11,10 @@ public class RestConfig {
     @Bean
     public RestClient.Builder restClientBuilder() {
         return RestClient.builder();
+    }
+
+    @Bean
+    public RestClient restClient(RestClient.Builder builder) {
+        return builder.build();
     }
 }
