@@ -1,4 +1,3 @@
-
 package com.skillcart.skillcart_auth_service.dto;
 
 import jakarta.validation.constraints.Email;
@@ -6,11 +5,15 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
 public record VerifyOtpRequest(
-        @NotBlank
-        @Email
+        @NotBlank(message = "Email is required")
+        @Email(message = "Enter a valid email address")
         String email,
 
-        @NotBlank
-        @Pattern(regexp = "\\d{5}", message = "OTP must contain 5 digits")
+        @NotBlank(message = "OTP is required")
+        @Pattern(
+                regexp = "\\d{5}",
+                message = "OTP must contain exactly 5 digits"
+        )
         String otp
-) {}
+) {
+}
