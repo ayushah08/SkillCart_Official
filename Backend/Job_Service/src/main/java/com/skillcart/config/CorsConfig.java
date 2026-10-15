@@ -18,7 +18,7 @@ public class CorsConfig {
 
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:5173",
-                "https://skill-cart-m1eh.vercel.app/"
+                "https://skill-cart.vercel.app/"
         ));
 
         configuration.setAllowedMethods(List.of(
